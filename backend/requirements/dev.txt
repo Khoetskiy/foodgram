@@ -1,0 +1,8 @@
+-r base.txt
+
+django-debug-toolbar>=4.1.0
+ipython
+django-extensions>=3.2.0
+coverage
+pytest
+pytest-django
