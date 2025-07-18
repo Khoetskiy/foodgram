@@ -5,9 +5,9 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from apps.core.utils import (
+    _get_old_image_path,
     archive_file_by_path,
     generate_unique_slug,
-    get_old_image_path,
 )
 from apps.recipes.models import Recipe, Tag
 
@@ -98,7 +98,7 @@ def cache_old_image_path(sender, instance, **kwargs):
     new_file = instance.image
 
     if (old_file and new_file) and old_file != new_file:
-        get_old_image_path()[instance.pk] = old_file.path
+        _get_old_image_path()[instance.pk] = old_file.path
 
 
 @receiver(post_save, sender=Recipe, dispatch_uid='archive_replaced_image')
@@ -116,6 +116,6 @@ def archive_replaced_image(sender, instance, **kwargs):
         shutil.Error: Ошибка при перемещении файла.
         OSError: Ошибка файловой системы.
     """
-    old_path = get_old_image_path().pop(instance.pk, None)
+    old_path = _get_old_image_path().pop(instance.pk, None)
     if old_path:
         archive_file_by_path(old_path)
