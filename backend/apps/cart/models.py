@@ -21,7 +21,7 @@ class Cart(TimeStampModel):
     )
 
     class Meta(TimeStampModel.Meta):
-        verbose_name = 'корзина'
+        verbose_name = 'объект "корзина"'
         verbose_name_plural = 'корзины'
         default_related_name = 'cart'
 
