@@ -21,9 +21,10 @@ class Cart(TimeStampModel):
     )
 
     class Meta(TimeStampModel.Meta):
-        verbose_name = 'объект "корзина"'
+        verbose_name = 'корзина'
         verbose_name_plural = 'корзины'
         default_related_name = 'cart'
+        indexes = [models.Index(fields=['user'], name='cart_user_idx')]  # noqa: RUF012
 
     def __str__(self) -> str:
         return f'Корзина пользователя: {self.user}'
@@ -56,6 +57,10 @@ class CartItem(TimeStampModel):
             models.UniqueConstraint(
                 fields=['cart', 'recipe'], name='unique_cart_recipe'
             )
+        ]
+        indexes = [  # noqa: RUF012
+            models.Index(fields=['cart'], name='cartitem_cart_idx'),
+            models.Index(fields=['recipe'], name='cartitem_recipe_idx'),
         ]
 
     def __str__(self) -> str:
