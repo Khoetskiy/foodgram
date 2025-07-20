@@ -1,6 +1,7 @@
 from django.db import models
 
 
+# FIXME: Удалить BaseMixinModel
 class BaseMixinModel(models.Model):
     class Meta:
         abstract = True

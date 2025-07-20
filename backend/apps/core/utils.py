@@ -7,6 +7,7 @@ from os.path import relpath
 from pathlib import Path
 from uuid import uuid4
 
+from django.utils.html import format_html, format_html_join
 from django.utils.text import slugify
 
 from apps.core.constants import (
@@ -64,6 +65,7 @@ def generate_unique_slug(
     instance=None,
     allow_unicode: bool = False,
 ) -> str:
+    # REVIEW: Убрать из-за ненадобности?
     """
     Генерирует уникальный slug на основе значения поля.
 
@@ -234,3 +236,30 @@ def archive_file_by_path(old_path: str) -> None:
         logger.exception('Ошибка перемещения файла')
     except OSError:
         logger.exception('Ошибка файловой системы')
+
+
+def render_recipes_as_html(args_list: list) -> str:
+    """Рендерит HTML-список рецептов c раскрывающимся блоком.
+
+    Args:
+        args_list (list) список рецептов
+
+    Returns:
+        str: HTML-код c раскрывающимся списком рецептов.
+    """
+    html_list = format_html_join(
+        '',
+        '<li><a href="{}">{}</a></li>',
+        args_list,
+    )
+    return format_html(
+        """
+        <details>
+          <summary style="cursor: pointer; color: #0645AD">
+            Показать рецепты
+          </summary>
+            <ul style="margin: 4px 0 0 16px;">{}</ul>
+        </detail>
+        """,
+        html_list,
+    )
