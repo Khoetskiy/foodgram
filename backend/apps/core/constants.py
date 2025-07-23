@@ -9,6 +9,7 @@ TAG_NAME_MAX_LENGTH = TAG_SLUG_MAX_LENGTH = 32
 # Ограничения для полей модели Ingredient
 INGREDIENT_NAME_MAX_LENGTH = 128
 INGREDIENT_NAME_MIN_LENGTH = 3
+MIN_AMOUNT_INGREDIENTS = 1
 
 # Ограничения для полей модели MeasurementUnit
 MEASUREMENTUNIT_MAX_NAME_LENGTH = 64

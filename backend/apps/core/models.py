@@ -1,13 +1,6 @@
 from django.db import models
 
 
-# FIXME: Удалить BaseMixinModel
-class BaseMixinModel(models.Model):
-    class Meta:
-        abstract = True
-        default_related_name = '%(app_label)s_%(class)s'
-
-
 class TimeStampModel(models.Model):
     """Абстрактаня модель для временных меток."""
 
@@ -23,3 +16,4 @@ class TimeStampModel(models.Model):
     class Meta:
         abstract = True
         ordering = ('-updated_at', '-created_at')
+        default_related_name = '%(app_label)s_%(class)s'
