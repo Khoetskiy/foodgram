@@ -12,9 +12,15 @@ class Command(BaseCommand):
         username = 'root'
         email = 'root@mail.com'
         password = 'root'
+        first_name = 'root'
+        last_name = 'rooot'
         try:
             User.objects.create_superuser(
-                username=username, email=email, password=password
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
             )
         except IntegrityError as e:
             self.stderr.write(
@@ -24,14 +30,10 @@ class Command(BaseCommand):
             )
         except (ValueError, TypeError) as e:
             self.stderr.write(
-                self.style.ERROR(
-                    f'Ошибка: {e}\nДанные некорректны!'
-                )
+                self.style.ERROR(f'Ошибка: {e}\nДанные некорректны!')
             )
         else:
             msg = 'Создан супер-пользователь с данными:'
-            data = (
-                f'  username: {username}\n  email: {email}\n  password: {password}'
-            )
+            data = f'  username: {username}\n  email: {email}\n  password: {password}'
             self.stdout.write(self.style.SUCCESS(msg))
             self.stdout.write(self.style.MIGRATE_LABEL(data))
