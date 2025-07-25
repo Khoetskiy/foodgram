@@ -1,3 +1,4 @@
+# ruff: noqa: RUF012
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -99,7 +100,7 @@ class Ingredient(TimeStampModel):
     )
     measurement_unit = models.ForeignKey(
         MeasurementUnit,
-        verbose_name='единица измерения',
+        verbose_name='ед. изм.',
         on_delete=models.PROTECT,
         related_name='ingredients',
         help_text='Выберите единицу измерения для ингредиента.',
@@ -209,7 +210,7 @@ class Recipe(TimeStampModel):
     author = models.ForeignKey(
         User,
         verbose_name='автор',
-        on_delete=models.PROTECT,  # QUESTION: поменять поведение?
+        on_delete=models.PROTECT,  # FIXME: поменять поведение
         help_text='Автор рецепта',
     )
     text = models.TextField('описание', help_text='Описание рецепта')
@@ -235,8 +236,9 @@ class Recipe(TimeStampModel):
             ),
             validate_safe_filename,
             validate_file_size,
-        ],
-    )  # TODO: Картинка должна быть закодированная в Base64 на API
+            # FIXME: Пофиксить кастомную валидацию
+        ],  # TODO: Картинка должна быть закодированная в Base64 на API
+    )
     cooking_time = models.PositiveIntegerField(
         'время приготовления',
         help_text='Время приготовления в минутах',
@@ -254,11 +256,10 @@ class Recipe(TimeStampModel):
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
         default_related_name = 'recipes'
-        indexes = [  # noqa: RUF012
+        indexes = [
             models.Index(fields=['name'], name='recipe_name_idx'),
-            models.Index(fields=['author'], name='recipe_author_idx'),
         ]
-        constraints = [  # noqa: RUF012
+        constraints = [
             models.CheckConstraint(
                 check=Q(cooking_time__gte=MIN_COOK_TIME)
                 & Q(cooking_time__lte=MAX_COOK_TIME),
@@ -273,7 +274,7 @@ class Recipe(TimeStampModel):
         return truncate_text(self.name)
 
 
-class RecipeIngredient(models.Model):
+class RecipeIngredient(TimeStampModel):
     """
     Промежуточная, для связи рецепта и ингредиентов + доп. поле `amount`.
 
@@ -288,12 +289,14 @@ class RecipeIngredient(models.Model):
         verbose_name='рецепт',
         on_delete=models.CASCADE,
         help_text='Рецепт, к которому относится ингредиент.',
+        related_name='recipe_ingredients',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='ингредиент',
         on_delete=models.CASCADE,
         help_text='Ингредиент, используемый в рецепте.',
+        related_name='ingredient_in_recipes',
     )
     amount = models.PositiveIntegerField(
         'количество',
