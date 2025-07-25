@@ -1,17 +1,14 @@
-# TODO: Вынести повторяющийся код в Mixin
-# FIXME: Оптимизировась все запросы
+# REVIEW: Есть ли повторяющийся код?
+# TODO: Настроить регистронезависимый поиск по названию (вхождение в начало, опционально — в произвольном месте)  # noqa: E501
 
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from django.urls import reverse
 
 from apps.core.constants import TEXT_TRUNCATE_LENGTH_ADMIN
-from apps.core.utils import (
-    format_duration_time,
-    render_html_list_block,
-    truncate_text,
-)
+from apps.core.services import get_objects
+from apps.core.utils import format_duration_time, truncate_text
+from apps.recipes.mixins import ReadOnlyInLineMixin
 from apps.recipes.models import (
     Ingredient,
     MeasurementUnit,
@@ -23,34 +20,62 @@ from apps.recipes.models import (
 User = get_user_model()
 
 
-class IngredientInLine(admin.TabularInline):
+class IngredientInLine(ReadOnlyInLineMixin, admin.TabularInline):
     """Inline-форма для модели Ingredient, используемая в админке."""
 
     model = Ingredient
     extra = 0
-
-
-class RecipeIngredientInLine(admin.TabularInline):
-    model = RecipeIngredient
-    extra = 0
-    autocomplete_fields = ('ingredient',)
-    min_num = 1
+    fields = ('name', 'created_at')
+    readonly_fields = ('name', 'created_at')
     verbose_name = 'ингредиент'
-    verbose_name_plural = 'ингредиенты'
-    show_change_link = True
+    verbose_name_plural = 'связанные ингредиенты'
+    ordering = ('-created_at',)
 
 
 class IngredientRecipeInLine(admin.TabularInline):
+    """Inline-форма для отображения Ingredient в админке модели Recipe."""
+
     model = RecipeIngredient
     extra = 0
-    autocomplete_fields = ('recipe',)
+    fields = ('ingredient', 'amount', 'get_measurement_unit')
+    readonly_fields = ('get_measurement_unit',)
+    autocomplete_fields = ('ingredient',)
+    min_num = 1
+    show_change_link = True
+    ordering = ('created_at',)
+    verbose_name = 'ингредиент'
+    verbose_name_plural = 'список ингредиентов'
+
+    @admin.display(description='Ед. изм.')
+    def get_measurement_unit(self, obj):
+        """Показывает единицу измерения, связанную с ингредиентом."""
+        if obj.ingredient_id:
+            return obj.ingredient.measurement_unit.name
+        return '-'
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('recipe', 'ingredient__measurement_unit')
+
+
+class RecipeIngredientInLine(ReadOnlyInLineMixin, admin.TabularInline):
+    """Inline-форма для отображения Recipe в админке модели Ingredient."""
+
+    model = RecipeIngredient
+    extra = 0
+    fields = ('recipe',)
     verbose_name = 'рецепт'
     verbose_name_plural = 'связанные рецепты'
-    show_change_link = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('recipe', 'ingredient')
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
+    """Админ-класс для модели Tag."""
+
     list_display = ('name', 'slug', 'updated_at', 'created_at')
     search_fields = ('name', 'slug')
     list_filter = ('updated_at', 'created_at')
@@ -69,9 +94,16 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    inlines = (IngredientRecipeInLine,)
-    list_display = ('name', 'measurement_unit')
-    search_fields = ('name', 'measurement_unit')
+    """
+    Админ-класс для модели Ingredient.
+
+    Включает:
+        - встроенный RecipeIngredientInLine для рецептов;
+    """
+
+    inlines = (RecipeIngredientInLine,)
+    list_display = ('name', 'measurement_unit', 'updated_at', 'created_at')
+    search_fields = ('name', 'measurement_unit__name')
     autocomplete_fields = ('measurement_unit',)
     list_filter = ('updated_at', 'created_at')
     fieldsets = (
@@ -85,13 +117,19 @@ class IngredientAdmin(admin.ModelAdmin):
         ),
     )
     readonly_fields = ('updated_at', 'created_at')
-    # TODO: Настроить регистронезависимый поиск по названию (вхождение в начало, опционально — в произвольном месте)  # noqa: E501
 
 
 @admin.register(MeasurementUnit)
 class MeasurementUnitAdmin(admin.ModelAdmin):
+    """
+    Админ-класс для модели MeasurementUnit.
+
+    Включает:
+        - встроенный IngredientInLine для ингредиентов;
+    """
+
     inlines = (IngredientInLine,)
-    list_display = ('name',)
+    list_display = ('name', 'updated_at', 'created_at')
     search_fields = ('name',)
     list_filter = ('updated_at', 'created_at')
     fieldsets = (
@@ -107,19 +145,27 @@ class MeasurementUnitAdmin(admin.ModelAdmin):
     readonly_fields = ('updated_at', 'created_at')
 
 
-# TODO: Доделать для рецептов
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    # TODO: Создать доп. индексы в модели
-    inlines = (RecipeIngredientInLine,)
+    """
+    Админ-класс для модели Recipe.
+
+    Включает:
+        - кастомные отображения названия, описания, ингредиентов
+                                        и времени приготовления;
+        - встроенный IngredientRecipeInLine для ингредиентов;
+        - аннотацию количества добавлений в избранное.
+    """
+
+    inlines = (IngredientRecipeInLine,)
     list_display = (
         'short_name',
         'author',
         'short_text',
         'get_ingredients',
-        'image',
         'cooking_time_display',
         'is_favorited',
+        'image',
         'updated_at',
         'created_at',
     )
@@ -151,42 +197,44 @@ class RecipeAdmin(admin.ModelAdmin):
         ),
     )
 
-    # TODO: Короткие докстринги добавить
     @admin.display(description='название')
     def short_name(self, obj):
+        """Возвращает сокращенное название рецепта."""
         return truncate_text(obj.name, length=TEXT_TRUNCATE_LENGTH_ADMIN)
 
     @admin.display(description='описание')
     def short_text(self, obj):
+        """Возвращает сокращенное описание рецепта."""
         return truncate_text(obj.text, length=TEXT_TRUNCATE_LENGTH_ADMIN)
 
     @admin.display(description='время приготовления')
     def cooking_time_display(self, obj):
+        """Возвращает человекочитаемое время приготовления."""
         return format_duration_time(obj.cooking_time)
 
     @admin.display(description='В избранном (раз)')
     def is_favorited(self, obj):
+        """Возвращает кол.-во. пользователей, добавивших рецепт в избранное."""
         return obj.fav_count
 
     @admin.display(description='ингредиенты')
     def get_ingredients(self, obj):
-        ingredients = obj.ingredients.all()
-        if not ingredients:
-            return '—'
-
-        args_list = [
-            (
-                reverse(
-                    'admin:recipes_ingredient_change', args=[ingredient.id]
-                ),
-                ingredient.name,
-            )
-            for ingredient in ingredients
-        ]
-        return render_html_list_block(args_list, 'Показать ингредиенты')
+        """Возвращает связанные ингредиенты, в виде списка HTML-блока."""
+        return get_objects(
+            items=obj.ingredients.all(),
+            admin_url='admin:recipes_ingredient_change',
+            item_args=lambda item: [item.id],
+            display_value=lambda item: item.name,
+            title='Показать ингредиенты',
+        )
 
     def get_queryset(self, request):
+        """
+        Расширяет queryset:
+            - добавляет prefetch_related для ингредиентов;
+            - аннотирует количество добавлений в избранное.
+        """
         qs = super().get_queryset(request)
         return qs.prefetch_related('ingredients').annotate(
-            fav_count=Count('favorites')
+            fav_count=Count('favorited_by')
         )
