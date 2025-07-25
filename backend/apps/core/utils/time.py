@@ -12,10 +12,11 @@ def format_duration_time(minutes: int) -> str:
         str: Отформатированное строковое представление.
     """
     hour = 60
-    if minutes < hour:
-        return f'{minutes} мин.'
     hours = minutes // hour
     mins = minutes % hour
-    if mins:
-        return f'{hours} ч. {minutes} мин.'
-    return f'{hours} ч.'
+
+    if hours and mins:
+        return f'{hours} ч. {mins} мин.'
+    if hours:
+        return f'{hours} ч.'
+    return f'{mins} мин.'
