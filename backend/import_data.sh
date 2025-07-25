@@ -39,7 +39,7 @@ COMMANDS=(
     "cart $CSV_DIR/carts.csv"
     "cartitem $CSV_DIR/cart_items.csv"
     "favorite $CSV_DIR/favorites.csv"
-    "favoriterecipes $CSV_DIR/favorite_recipes.csv"
+    "favoriteitem $CSV_DIR/favorite_items.csv"
 )
 
 echo "Проверка CSV файлов..."
