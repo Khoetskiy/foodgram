@@ -1,3 +1,4 @@
+# ruff: noqa: RUF012
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -11,6 +12,9 @@ class Cart(TimeStampModel):
     """
     Модель корзины, привязанной к пользователю.
     Каждому пользователю соответствует одна корзина.
+
+    Attributes:
+        user (CustomUser): Пользователь, которому принадлежит корзина.
     """
 
     user = models.OneToOneField(
@@ -18,50 +22,56 @@ class Cart(TimeStampModel):
         verbose_name='пользователь',
         on_delete=models.CASCADE,
         help_text='Пользователь, к которому привязана эта корзина',
+        related_name='cart',
     )
 
     class Meta(TimeStampModel.Meta):
         verbose_name = 'корзина'
         verbose_name_plural = 'корзины'
-        default_related_name = 'cart'
-        indexes = [models.Index(fields=['user'], name='cart_user_idx')]  # noqa: RUF012
+        indexes = [models.Index(fields=['user'], name='cart_user_idx')]
 
     def __str__(self) -> str:
-        return f'Корзина пользователя: {self.user}'
+        return f'Корзина пользователя: {str(self.user.username).upper()}'
 
 
 class CartItem(TimeStampModel):
     """
-    Модель элемента корзины.
-    Один CartItem относится к одной Cart и одному Recipe.
+    Элемент корзины: связь между корзиной и рецептом.
+
+    Один CartItem связывает одну Cart с одним Recipe.
+
+    Attributes:
+        cart (Cart): Корзина, к которой относится этот элемент.
+        recipe (Recipe): Рецепт, добавленный в корзину.
     """
 
     cart = models.ForeignKey(
         Cart,
         verbose_name='корзина',
         on_delete=models.CASCADE,
-        help_text='Корзина, к которой относится этот элемент',
+        help_text='Корзина, к которой относится этот элемент.',
+        related_name='items',
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='рецепт',
         on_delete=models.CASCADE,
-        help_text='Рецепт, добавленный в корзину',
+        help_text='Рецепт, добавленный в корзину.',
+        related_name='in_carts',
     )
 
     class Meta(TimeStampModel.Meta):
         verbose_name = 'элемент корзины'
         verbose_name_plural = 'элементы корзины'
-        default_related_name = 'items'
-        constraints = [  # noqa: RUF012
+        constraints = [
             models.UniqueConstraint(
                 fields=['cart', 'recipe'], name='unique_cart_recipe'
             )
         ]
-        indexes = [  # noqa: RUF012
+        indexes = [
             models.Index(fields=['cart'], name='cartitem_cart_idx'),
             models.Index(fields=['recipe'], name='cartitem_recipe_idx'),
         ]
 
     def __str__(self) -> str:
-        return f'{self.recipe} в корзине {self.cart.user}'
+        return f'{self.recipe} в корзине {self.cart.user.username}'
