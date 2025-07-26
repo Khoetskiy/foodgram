@@ -12,7 +12,7 @@ from apps.recipes.models import (
     RecipeIngredient,
     Tag,
 )
-from apps.users.models import Favorite, Favoriteitem
+from apps.users.models import Favorite, Favoriteitem, Subscribe
 
 User = get_user_model()
 
@@ -28,6 +28,7 @@ MODEL_CLASS_MAP = {
     'cartitem': CartItem,
     'favorite': Favorite,
     'favoriteitem': Favoriteitem,
+    'subscribe': Subscribe,
 }
 
 

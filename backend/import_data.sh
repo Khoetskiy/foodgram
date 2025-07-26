@@ -40,6 +40,7 @@ COMMANDS=(
     "cartitem $CSV_DIR/cart_items.csv"
     "favorite $CSV_DIR/favorites.csv"
     "favoriteitem $CSV_DIR/favorite_items.csv"
+    "subscribe $CSV_DIR/subscribes.csv"
 )
 
 echo "Проверка CSV файлов..."
