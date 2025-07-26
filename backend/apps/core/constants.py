@@ -34,3 +34,38 @@ MAX_SIZE_FILE: int = 5  # MB
 MAX_ATTEMPTS = 1000  # Для генерации slug ---
 ARCHIVE_ROOT = 'archive'
 UUID_FILENAME_LENGTH = 10
+
+
+# TODO: Вынести в отдельный файл `core/constants/help_texts.py`?
+
+# TODO: Сделать также константы для остальных приложений?
+
+# --- Help texts для моделей приложения users ---
+CUSTOMUSER_USERNAME_HELP = (
+    'Уникальное имя пользователя. '
+    'Должно содержать только латинские буквы, цифры и подчёркивания. '
+    f'Минимум {USERNAME_MIN_LENGTH} символов(а).'
+)
+CUSTOMUSER_EMAIL_HELP = (
+    'Действующий и уникальный адрес электронной почты, используемый для входа.'
+)
+CUSTOMUSER_FIRSTNAME_HELP = (
+    'Введите имя (только буквы кириллицы или латиницы).'
+)
+CUSTOMUSER_LASTNAME_HELP = (
+    'Введите фамилию (только буквы кириллицы или латиницы).'
+)
+CUSTOMUSER_AVATAR_HELP = (
+    f'Загрузите фото в формате {", ".join(ALLOWED_EXTENSIONS)}. '
+    f'Максимальный размер: {MAX_SIZE_FILE}МБ.'
+)
+
+FAVORITE_USER_HELP = 'Пользователь, у которого есть список избранного.'
+
+FAVORITEITEM_FAVORITE_HELP = (
+    'Список избранного, к которому относится этот элемент.'
+)
+FAVORITEITEM_RECIPE_HELP = 'Рецепт, добавленный в избранное.'
+
+SUBSCRIBE_USER_HELP = 'Пользователь, который подписывается.'
+SUBSCRIBE_AUTHOR_HELP = 'Пользователь, на которого подписываются.'
