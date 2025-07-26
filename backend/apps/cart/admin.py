@@ -8,7 +8,7 @@ from apps.core.services import get_objects
 
 
 class CartItemInline(admin.TabularInline):
-    """Инлайн для отображения элементов корзины в админке модели Cart."""
+    """Inline-форма для отображения элементов корзины в админке модели Cart."""
 
     model = CartItem
     extra = 0
@@ -39,7 +39,7 @@ class CartAdmin(admin.ModelAdmin):
 
     @admin.display(description='Рецепты')
     def get_recipes(self, obj):
-        """Отображает связанные рецепты, как HTML-блок со списком объектов."""
+        """Возвращает связанные рецепты, в виде списка HTML-блока."""
         return get_objects(
             items=obj.items.all(),
             admin_url='admin:recipes_recipe_change',
@@ -54,7 +54,7 @@ class CartAdmin(admin.ModelAdmin):
             Prefetch(
                 'items', queryset=CartItem.objects.select_related('recipe')
             )
-        )  # REVIEW: Получше разобраться как это работает
+        )  
 
 
 # FIXME: Убрать из-за ненадобности
