@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 #     except (ValueError, RuntimeError) as e:
 #         message = f'Ошибка генерации slug для тега {instance.name}: {e!s}'
 #         logger.exception('Ошибка генерации slug для тега')
-#         raise ValidationError(message) from e
+#         raise ValidationError(message, code='error_create_slug') from e
 
 
 @receiver(post_delete, sender=Recipe, dispatch_uid='move_files_to_archive')

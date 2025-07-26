@@ -5,10 +5,10 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db.models import Count
 
+from apps.core.admin_mixins import ReadOnlyInLineMixin
 from apps.core.constants import TEXT_TRUNCATE_LENGTH_ADMIN
 from apps.core.services import get_objects
 from apps.core.utils import format_duration_time, truncate_text
-from apps.recipes.mixins import ReadOnlyInLineMixin
 from apps.recipes.models import (
     Ingredient,
     MeasurementUnit,
@@ -172,7 +172,6 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'author__username')
     list_filter = ('tags', 'updated_at', 'created_at')
     autocomplete_fields = ('author',)
-
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         (
