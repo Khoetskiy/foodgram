@@ -17,10 +17,15 @@ SECRET_KEY = 'django-insecure-f0ftqr*^rh!&tqqjt@y54ks^8bl&j9ek5!3)qzieknzu@^ft+$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
+
+DEV_APPS = [
+    'django_extensions',
+    'debug_toolbar',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -29,8 +34,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
+    'debug_toolbar',
+    'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
+
+    'apps.recipes.apps.RecipesConfig',
+    'apps.cart.apps.CartConfig',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -40,7 +52,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+INTERNAL_IPS = ['127.0.0.1']
 
 ROOT_URLCONF = 'config.urls'
 
@@ -110,6 +125,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -133,19 +153,25 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
-            'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'INFO',
+            'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'WARNING',
         },
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'verbose',
             'level': 'INFO',
-            'filename': 'logs/log.log',
+            'filename': BASE_DIR / 'logs/log.log',
             'maxBytes': 1024 * 1024 * 5,
             'backupCount': 5,
         },
     },
     'loggers': {
-        'recipes': {
+        # 'apps.recipes': {
+        #     'handlers': ['console', 'file'],
+        #     # 'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'INFO',
+        #     'level': 'DEBUG',
+        #     'propagate': False,
+        # },  # FIXME
+        'apps': {  # Покрывает все приложения в apps
             'handlers': ['console', 'file'],
             'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'INFO',
             'propagate': False,
