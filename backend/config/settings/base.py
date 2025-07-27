@@ -28,14 +28,19 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+THIRD_PARTY_APPS = [
+    'rest_framework',
+]
+
 LOCAL_APPS = [
     'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
     'apps.recipes.apps.RecipesConfig',
     'apps.cart.apps.CartConfig',
+    'apps.api.apps.ApiConfig',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
