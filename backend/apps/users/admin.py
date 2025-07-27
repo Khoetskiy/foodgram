@@ -165,7 +165,7 @@ class FavoriteAdmin(admin.ModelAdmin):
             Prefetch(
                 'items', queryset=Favoriteitem.objects.select_related('recipe')
             ),
-        )
+        )  # XXX: Уточнить как работает и для корзины?
 
 
 # # TODO: Удалить из-за ненадобности?

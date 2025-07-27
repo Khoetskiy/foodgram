@@ -54,7 +54,7 @@ class CartAdmin(admin.ModelAdmin):
             Prefetch(
                 'items', queryset=CartItem.objects.select_related('recipe')
             )
-        )  
+        )  # REVIEW: Получше разобраться как это работает
 
 
 # FIXME: Убрать из-за ненадобности
