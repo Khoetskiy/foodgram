@@ -17,16 +17,10 @@ SECRET_KEY = 'django-insecure-f0ftqr*^rh!&tqqjt@y54ks^8bl&j9ek5!3)qzieknzu@^ft+$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
-
-DEV_APPS = [
-    'django_extensions',
-    'debug_toolbar',
-]
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,11 +28,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'django_extensions',
     'debug_toolbar',
+
     'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
-
     'apps.recipes.apps.RecipesConfig',
     'apps.cart.apps.CartConfig',
 ]
@@ -126,7 +121,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
-
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
@@ -165,13 +159,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        # 'apps.recipes': {
-        #     'handlers': ['console', 'file'],
-        #     # 'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'INFO',
-        #     'level': 'DEBUG',
-        #     'propagate': False,
-        # },  # FIXME
-        'apps': {  # Покрывает все приложения в apps
+        'apps': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG' if config('DEBUG', default=True, cast=bool) else 'INFO',
             'propagate': False,
