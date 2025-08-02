@@ -89,6 +89,7 @@ class UserAdmin(BaseUserAdmin):
             'Персональная информация',
             {'fields': ('username', 'first_name', 'last_name')},
         ),
+        ('Фото', {'fields': ('avatar',)}),
         (
             'Разрешения',
             {
