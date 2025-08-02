@@ -13,7 +13,7 @@ select = [
 ]
 ignore = [
     "ANN401", "S101", "D", "FBT001", "FBT002", "TD002", "TD003",
-    "FIX002", "COM812", "ISC001", "RUF001", "BLE001", "TD001", "FIX001", "FIX003", "RUF012"
+    "FIX002", "COM812", "ISC001", "RUF001", "BLE001", "TD001", "FIX001", "FIX003", "RUF012", "ERA001"
 ]
 unfixable = ["F401", "F841"]
 
