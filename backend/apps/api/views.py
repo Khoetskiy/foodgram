@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet as DjoserUserViewSet
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import filters, generics, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import MethodNotAllowed, NotFound
 from rest_framework.permissions import (
@@ -179,6 +180,23 @@ class TagViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
 
 
+class IngredientViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для модели Ingredient.
+
+    Поддерживает поиск по частичному вхождению в начале названия ингредиента.
+    """
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    http_method_names = ['get']
+    pagination_class = None  # FIXME: вроде не надо по Redoc
+    permission_classes = (AllowAny,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    # filterset_fields = ('name',)
+    search_fields = ('^name',)  # NOTE: ^ - startswith
+
+
 # ===========================================================
 
 
@@ -193,34 +211,34 @@ class RecipeApiView(generics.ListAPIView):
     serializer_class = RecipeSerializer
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
-    # queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
+# class IngredientViewSet(viewsets.ModelViewSet):
+#     # queryset = Ingredient.objects.all()
+#     serializer_class = IngredientSerializer
 
-    # def get_queryset(self):
-    #     return super().get_queryset()[:3]  # Обрезаю до 3 записей
+#     # def get_queryset(self):
+#     #     return super().get_queryset()[:3]  # Обрезаю до 3 записей
 
-    def get_queryset(self):
-        pk = self.kwargs.get('pk')
+#     def get_queryset(self):
+#         pk = self.kwargs.get('pk')
 
-        if not pk:
-            return Ingredient.objects.all()[:3]
+#         if not pk:
+#             return Ingredient.objects.all()[:3]
 
-        return Ingredient.objects.filter(
-            pk=pk
-        )  # NOTE: get_queryset должен возвращать список, поэтому filter а не get
+#         return Ingredient.objects.filter(
+#             pk=pk
+#         )  # NOTE: get_queryset должен возвращать список, поэтому filter а не get
 
-    # NOTE: Если переопределяем, то можем убрать атрибут класса queryset, но нужно `basename` в router
+#     # NOTE: Если переопределяем, то можем убрать атрибут класса queryset, но нужно `basename` в router
 
-    @action(methods=['get'], detail=False)
-    def get_recipes(self, request):
-        recipes = Recipe.objects.all()
-        return Response({'recipes': [i.name for i in recipes]})
+#     @action(methods=['get'], detail=False)
+#     def get_recipes(self, request):
+#         recipes = Recipe.objects.all()
+#         return Response({'recipes': [i.name for i in recipes]})
 
-    @action(methods=['get'], detail=True)
-    def recipe(self, request, pk=None):
-        recipe = Recipe.objects.get(pk=pk)
-        return Response({'result': recipe.name})
+#     @action(methods=['get'], detail=True)
+#     def recipe(self, request, pk=None):
+#         recipe = Recipe.objects.get(pk=pk)
+#         return Response({'result': recipe.name})
 
 
 class IngredientDetailAPIView(generics.RetrieveUpdateDestroyAPIView):

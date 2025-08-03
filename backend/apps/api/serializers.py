@@ -170,5 +170,69 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug')
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Ingredient."""
+
+    # measurement_unit = serializers.StringRelatedField(many=False)
+    measurement_unit = serializers.SlugRelatedField(
+        many=False, read_only=True, slug_field='name'
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit')
 
 
+# =============== Пример автозаполнения поля user ============================
+class RecipeSerializer(serializers.ModelSerializer):
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
+
+# =============================================================================
+
+
+# class IngredientModel:
+#     def __init__(self, name, measurement_unit_id) -> None:
+#         self.name = name
+#         self.measurement_unit_id = measurement_unit_id
+
+
+# class IngredientSerializer(serializers.Serializer):
+#     name = serializers.CharField(max_length=255)
+#     measurement_unit_id = serializers.IntegerField()
+#     created_at = serializers.DateTimeField(read_only=True)
+#     updated_at = serializers.DateTimeField(read_only=True)
+
+#     def create(self, validated_data):
+#         return Ingredient.objects.create(**validated_data)
+
+#     def update(self, instance, validated_data):
+#         instance.name = validated_data.get('name', instance.name)
+#         instance.measurement_unit_id = validated_data.get(
+#             'measurement_unit_id', instance.measurement_unit_id
+#         )
+#         instance.updated_at = validated_data.get(
+#             'updated_at', instance.updated_at
+#         )
+#         instance.save()
+#         return instance
+
+
+# def encode():
+#     model = IngredientModel('apple', 7)
+#     model_sr = IngredientSerializer(model)
+#     print(model_sr.data, type(model_sr.data), sep='\n')
+#     json = JSONRenderer().render(model_sr.data)
+#     print(json)
+
+
+# def decode():
+#     stream = io.BytesIO(b'{"name":"apple","measurement_unit_id":7}')
+#     data = JSONParser().parse(stream)
+#     serializers = IngredientSerializer(data=data)
+#     serializers.is_valid()
+#     print(serializers.validated_data)

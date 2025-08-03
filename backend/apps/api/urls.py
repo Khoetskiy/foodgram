@@ -16,6 +16,7 @@ from apps.api.views import (
     IngredientViewSet,
     RecipeApiView,
     RecipeListView,
+    TagViewSet,
     UserViewSet,
     manage_avatar,
 )
@@ -24,7 +25,11 @@ app_name = 'api_v1'
 
 router_v1 = DefaultRouter()
 router_v1.register(r'users', CustomUserViewSet, basename='users')
-# router_v1.register(r'ingredient', IngredientViewSet, basename='ingredient')
+# router_v1.register(r'users', UserViewSet, basename='users')
+router_v1.register('tags', TagViewSet, basename='tags')
+router_v1.register('ingredients', IngredientViewSet, basename='ingredients')
+
+
 
 
 # djoser_auth = [
