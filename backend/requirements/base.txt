@@ -4,5 +4,6 @@ python-decouple==3.8
 pillow==11.3.0
 deep-translator==1.11.4
 djoser==2.3.3
+django-filter==25.1
 
 # TODO: добавить все нужные зависимости
