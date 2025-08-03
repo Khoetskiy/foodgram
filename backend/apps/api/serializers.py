@@ -9,7 +9,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from apps.core.utils import decode_base64_image, generate_unique_filename
-from apps.recipes.models import Ingredient, MeasurementUnit, Recipe
+from apps.recipes.models import Ingredient, MeasurementUnit, Recipe, Tag
 from apps.users.models import Subscribe
 
 User = get_user_model()
@@ -132,30 +132,43 @@ class UserAvatarSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Обязательное поле.')
         return value
 
-    # def validate(self, attrs):
-    #     if 'avatar' not in attrs or not attrs.get('avatar'):
-    #         raise serializers.ValidationError({'avatar': 'Это поле обязательно.'})
-    #     return attrs
+    def validate(self, attrs):
+        if 'avatar' not in attrs or not attrs.get('avatar'):
+            raise serializers.ValidationError(
+                {'avatar': 'Это поле обязательно.'}
+            )
+        return attrs
+
+    # FIXME: Убрать валидацию?
 
 
 # NOTE: Заменил на встроенную в Djoser
-# class PasswordSetSerializer(serializers.Serializer):
-#     current_password = serializers.CharField(
-#         required=True, label='Текущий пароль'
-#     )
-#     new_password = serializers.CharField(required=True, label='Новый пароль')
+class PasswordSetSerializer(serializers.Serializer):
+    """"""
 
-#     def validate_current_password(self, value):
-#         user = self.context['request'].user
-#         if not user.check_password(value):
-#             raise serializers.ValidationError('Неверный текущий пароль')
-#         return value
+    current_password = serializers.CharField(
+        required=True, label='Текущий пароль'
+    )
+    new_password = serializers.CharField(required=True, label='Новый пароль')
 
-#     def validate_new_password(self, value):
-#         validators.validate_password(value)
-#         return value
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('Неверный текущий пароль')
+        return value
+
+    def validate_new_password(self, value):
+        validators.validate_password(value)
+        return value
 
 
-# =============================================================================
+class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Tag."""
+
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'slug')
+
+
 
 
