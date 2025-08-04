@@ -15,11 +15,14 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.api.filters import RecipeFilter
+from apps.api.pagination import CustomPageNumberPagination
 from apps.api.permissions import DenyAll, IsAdminOrReadOnly
 from apps.api.serializers import (
     IngredientSerializer,
     PasswordSetSerializer,
-    RecipeSerializer,
+    RecipeReadSerializer,
+    RecipeWriteSerializer,
     TagSerializer,
     UserAvatarSerializer,
     UserCreateUpdateSerializer,
@@ -197,18 +200,57 @@ class IngredientViewSet(viewsets.ModelViewSet):
     search_fields = ('^name',)  # NOTE: ^ - startswith
 
 
+class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для модели Recipe.
+
+    Доступна фильтрация по избранному, автору, списку покупок и тегам.
+    Возможна пагинация с настройкой лимита.
+    """
+
+    queryset = Recipe.objects.all()
+    # serializer_class = RecipeSerializer
+    permission_classes = (AllowAny,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
+    pagination_class = CustomPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return RecipeWriteSerializer
+        return RecipeReadSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        read_serializer = RecipeReadSerializer(
+            recipe, context={'request': request}
+        )
+        return Response(
+            read_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    # def perform_create(self, serializer):
+    #     serializer.save(author=self.request.user)
+
+
 # ===========================================================
 
 
 class RecipeListView(generics.ListCreateAPIView):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
 
 class RecipeApiView(generics.ListAPIView):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
 
 
 # class IngredientViewSet(viewsets.ModelViewSet):
