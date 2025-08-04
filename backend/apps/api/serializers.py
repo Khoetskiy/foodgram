@@ -1,19 +1,11 @@
-import base64
-
-import django.contrib.auth.password_validation as validators
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
 
 from apps.cart.models import CartItem
-from apps.core.utils import decode_base64_image, generate_unique_filename
+from apps.core.utils import decode_base64_image
 from apps.recipes.models import (
     Ingredient,
-    MeasurementUnit,
     Recipe,
     RecipeIngredient,
     Tag,
