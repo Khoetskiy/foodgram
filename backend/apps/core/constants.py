@@ -10,6 +10,7 @@ TAG_NAME_MAX_LENGTH = TAG_SLUG_MAX_LENGTH = 32
 INGREDIENT_NAME_MAX_LENGTH = 128
 INGREDIENT_NAME_MIN_LENGTH = 3
 MIN_AMOUNT_INGREDIENTS = 1
+MAX_AMOUNT_INGREDIENTS = 100
 
 # --- Ограничения для полей модели MeasurementUnit ---
 MEASUREMENTUNIT_MAX_NAME_LENGTH = 64
@@ -69,3 +70,18 @@ FAVORITEITEM_RECIPE_HELP = 'Рецепт, добавленный в избран
 
 SUBSCRIBE_USER_HELP = 'Пользователь, который подписывается.'
 SUBSCRIBE_AUTHOR_HELP = 'Пользователь, на которого подписываются.'
+
+
+DISABLED_ACTIONS_DJOSER = [
+    'activation',
+    'resend_activation',
+    'reset_password',
+    'reset_password_confirm',
+    'set_username',
+    'reset_username',
+    'reset_username_confirm',
+]
+
+# --- Управление pagination ---
+PAGE_SIZE_PAGINATION = 10
+MAX_PAGE_SIZE_PAGINATION = 50

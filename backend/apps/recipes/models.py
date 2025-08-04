@@ -14,6 +14,7 @@ from apps.core.constants import (
     ALLOWED_EXTENSIONS,
     INGREDIENT_NAME_MAX_LENGTH,
     INGREDIENT_NAME_MIN_LENGTH,
+    MAX_AMOUNT_INGREDIENTS,
     MAX_COOK_TIME,
     MEASUREMENTUNIT_MAX_NAME_LENGTH,
     MIN_AMOUNT_INGREDIENTS,
@@ -226,7 +227,8 @@ class Recipe(TimeStampModel):
     )
     image = models.ImageField(
         'фото',
-        upload_to=recipe_image_upload_path,
+        # upload_to=recipe_image_upload_path,
+        upload_to='recipes_test',
         help_text='Фотография готового блюда',
         validators=[
             FileExtensionValidator(
@@ -306,6 +308,10 @@ class RecipeIngredient(TimeStampModel):
                 MIN_AMOUNT_INGREDIENTS,
                 f'Количество должно быть больше {MIN_AMOUNT_INGREDIENTS}.',
             ),
+            MaxValueValidator(
+                MAX_AMOUNT_INGREDIENTS,
+                f'Максимальное количество: {MAX_AMOUNT_INGREDIENTS}',
+            ),
         ],
     )
 
@@ -313,6 +319,12 @@ class RecipeIngredient(TimeStampModel):
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
         ordering = ('amount',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_recipe_ingredient',
+            )
+        ]
 
     def __str__(self) -> str:
         return self.recipe.name

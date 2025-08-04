@@ -52,7 +52,7 @@ class CustomUser(AbstractUser):
     """
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     username = models.CharField(
         'имя пользователя',
@@ -122,6 +122,7 @@ class CustomUser(AbstractUser):
         'аватар',
         upload_to='avatars/',
         blank=True,
+        null=True,
         help_text=CUSTOMUSER_AVATAR_HELP,
         validators=[
             FileExtensionValidator(
@@ -132,6 +133,7 @@ class CustomUser(AbstractUser):
             validate_safe_filename,
             validate_file_size,
         ],
+        # default=
     )
 
     class Meta:
@@ -202,7 +204,7 @@ class Favorite(TimeStampModel):
         return f'Избранное пользователя: {str(self.user.username).upper()}'
 
 
-class Favoriteitem(TimeStampModel):
+class Favoriteitem(TimeStampModel):  # FIXME: Заменить на FavoriteItem
     """
     Элемент избранного: связь между избранным и рецептом.
 
