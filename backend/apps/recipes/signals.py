@@ -120,20 +120,20 @@ def archive_replaced_image(sender, instance, **kwargs):
         archive_file_by_path(old_path)
 
 
-@receiver(pre_save, sender=Recipe, dispatch_uid='save_recipe_image')
-def save_recipe_image(sender, instance, **kwargs):
-    """
-    Временно удаляет изображение, чтобы сохранить Recipe и получить pk.
+# @receiver(pre_save, sender=Recipe, dispatch_uid='save_recipe_image')
+# def save_recipe_image(sender, instance, **kwargs):
+#     """
+#     Временно удаляет изображение, чтобы сохранить Recipe и получить pk.
 
-    При создании сохраняет экземпляр без изображения, чтобы получить pk,
-    затем восстанавливает изображение для корректного пути сохранения.
+#     При создании сохраняет экземпляр без изображения, чтобы получить pk,
+#     затем восстанавливает изображение для корректного пути сохранения.
 
-    Args:
-        sender (Model): Модель, отправившая сигнал.
-        instance (Recipe): Экземпляр рецепта.
-    """
-    if not instance.pk and instance.image:
-        image = instance.image
-        instance.image = None
-        instance.save()
-        instance.image = image
+#     Args:
+#         sender (Model): Модель, отправившая сигнал.
+#         instance (Recipe): Экземпляр рецепта.
+#     """
+#     if not instance.pk and instance.image:
+#         image = instance.image
+#         instance.image = None
+#         instance.save()
+#         instance.image = image
