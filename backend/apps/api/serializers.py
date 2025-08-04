@@ -185,6 +185,13 @@ class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
 class RecipeIngredientCreateSerializer(RecipeIngredientBaseSerializer):
     """Сериализатор для добавления ингредиентов в рецепт."""
 
+    # FIXME: Нужно ли? вроде само отрабатывает. Посмотреть в Redoc ошибки 400
+    # def validate_amount(self, value):
+    #     if value < 1:
+    #         msg = 'Количество должно быть больше 0.'
+    #         raise serializers.ValidationError(msg)
+    #     return value
+
 
 class RecipeIngredientReadSerializer(RecipeIngredientBaseSerializer):
     """Сериализатор для отображения ингредиентов рецепта."""
@@ -250,7 +257,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        """Создает рецепт c ингредиентами и тегами."""
+        """Создает рецепт, включая ингредиенты и теги."""
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
 
@@ -262,6 +269,25 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             recipe.tags.set(tags_data)
 
         return recipe
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        """Обновляет рецепт, включая ингредиенты и теги."""
+        ingredients_data = validated_data.pop('ingredients', None)
+        tags_data = validated_data.pop('tags', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if ingredients_data is not None:
+            instance.recipe_ingredients.all().delete()
+            create_recipe_ingredients(instance, ingredients_data)
+
+        if tags_data is not None:
+            instance.tags.set(tags_data)
+
+        return instance
 
     # def to_representation(self, instance):
     #     # FIXME: Решить где это реализовывать?
@@ -336,3 +362,6 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         """
         user = self._get_authenticated_user()
         return CartItem.objects.filter(recipe=obj, cart__user=user).exists()
+
+
+# TODO: Написать сериализатор для получения короткой ссылки
