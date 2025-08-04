@@ -123,6 +123,7 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+# FIXME: Много дублирующегося кода с CartAdmin в cart/admin. Убрать в миксин
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     """

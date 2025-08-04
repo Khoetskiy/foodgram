@@ -34,8 +34,19 @@ class CartAdmin(admin.ModelAdmin):
 
     inlines = (CartItemInline,)
     list_display = ('user', 'get_recipes', 'updated_at', 'created_at')
-    search_fields = ('user__username', 'items__recipe__name')
     list_filter = ('updated_at', 'created_at')
+    search_fields = ('user__username', 'items__recipe__name')
+    readonly_fields = ('updated_at', 'created_at')
+    fieldsets = (
+        (None, {'fields': ('user',)}),
+        (
+            'Системная информация',
+            {
+                'fields': ('updated_at', 'created_at'),
+                'classes': ('extrapretty',),
+            },
+        ),
+    )
 
     @admin.display(description='Рецепты')
     def get_recipes(self, obj):
