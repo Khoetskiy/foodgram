@@ -19,6 +19,7 @@ from apps.api.views import (
     TagViewSet,
     UserViewSet,
     manage_avatar,
+    RecipeViewSet
 )
 
 app_name = 'api_v1'
@@ -28,6 +29,7 @@ router_v1.register(r'users', CustomUserViewSet, basename='users')
 # router_v1.register(r'users', UserViewSet, basename='users')
 router_v1.register('tags', TagViewSet, basename='tags')
 router_v1.register('ingredients', IngredientViewSet, basename='ingredients')
+router_v1.register('recipes', RecipeViewSet, basename='recipes')
 
 
 
