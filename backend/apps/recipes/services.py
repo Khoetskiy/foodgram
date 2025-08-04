@@ -151,3 +151,25 @@ def archive_file_by_path(old_path: str) -> None:
         logger.exception('Ошибка перемещения файла')
     except OSError:
         logger.exception('Ошибка файловой системы')
+
+
+def create_recipe_ingredients(recipe, ingredients_data: list[dict]) -> None:
+    """
+    Создает связи RecipeIngredient для рецепта.
+
+    Args:
+        recipe (Recipe): Сохраненный рецепт.
+        ingredients_data (list[dict]): Список ингредиентов.
+    """
+    from apps.recipes.models import RecipeIngredient  # Иначе цикличный импорт
+
+    RecipeIngredient.objects.bulk_create(
+        [
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient_id=ingredient_data['ingredient']['id'],
+                amount=ingredient_data['amount'],
+            )
+            for ingredient_data in ingredients_data
+        ]
+    )

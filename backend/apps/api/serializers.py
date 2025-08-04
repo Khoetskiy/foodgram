@@ -18,67 +18,10 @@ from apps.recipes.models import (
     RecipeIngredient,
     Tag,
 )
+from apps.recipes.services import create_recipe_ingredients
 from apps.users.models import Favoriteitem, Subscribe
 
 User = get_user_model()
-
-
-class UserReadSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели пользователя."""
-
-    is_subscribed = serializers.SerializerMethodField()  # FIXME: read_only?
-
-    class Meta:
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'avatar',
-        )
-
-    def get_is_subscribed(self, obj):
-        """
-        Вычисляемое поле, показывающее статус подписки пользователя на автора.
-
-        Args:
-            obj (User): Автор, на которого может быть подписка.
-
-        Returns:
-            bool: True, если request.user подписан на obj, иначе False.
-        """
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-        return Subscribe.objects.filter(user=request.user, author=obj).exists()
-
-
-class UserCreateUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'password',
-        )
-        read_only_fields = ('id',)
-        extra_kwargs = {'password': {'write_only': True}}  # noqa: RUF012
-
-        def create(self, validate_data):
-            return User.objects.create_user(**validate_data)
-
-        # def create(self, validate_data):
-        #     password = validate_data.pop('password')
-        #     user = User(**validate_data)
-        #     user.set_password(password)
-        #     user.save()
-        #     return user
 
 
 class Base64ImageField(serializers.ImageField):
@@ -109,7 +52,7 @@ class Base64ImageField(serializers.ImageField):
         # if not data:
         #     if self.required:
         #         self.fail('required')
-        #     return None
+        #     return None  # FIXME
 
         if isinstance(data, str) and data.startswith('data:image'):
             try:
@@ -117,6 +60,72 @@ class Base64ImageField(serializers.ImageField):
             except ValueError as e:
                 raise serializers.ValidationError(str(e)) from e
         return super().to_internal_value(data)
+
+
+class UserReadSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для чтения данных пользователя (GET-запросы).
+
+    Включает вычисляемое поле `is_subscribed`, показывающее,
+    подписан ли текущий пользователь на отображаемого автора.
+
+    Attributes:
+        is_subscribed (SerializerMethodField): Вычисляемое поле.
+    """
+
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'avatar',
+        )
+
+    def get_is_subscribed(self, obj):
+        """
+        Вычисляемое поле, показывающее статус подписки пользователя на автора.
+
+        Args:
+            obj (User): Автор, на которого может быть подписка.
+
+        Returns:
+            bool: True, если request.user подписан на obj, иначе False.
+        """
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return Subscribe.objects.filter(user=request.user, author=obj).exists()
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания пользователя (POST-запросы).
+
+    Используется при регистрации. Поле `password` доступно только для записи.
+    """
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+        )
+        read_only_fields = ('id',)
+        extra_kwargs = {'password': {'write_only': True}}  # noqa: RUF012
+
+        def create(self, validate_data):
+            """Создаёт пользователя и хэширует пароль."""
+            return User.objects.create_user(**validate_data)
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
@@ -128,46 +137,26 @@ class UserAvatarSerializer(serializers.ModelSerializer):
     """
 
     avatar = Base64ImageField(required=True, allow_null=False)
-    # BUG: не то смс об пустом поле выводиться
-    # avatar = serializers.CharField(required=False)
+    # BUG: не то смс об пустом поле выводиться?
 
     class Meta:
         model = User
         fields = ('avatar',)
 
-    def validate_avatar(self, value):
-        if not value:
-            raise serializers.ValidationError('Обязательное поле.')
-        return value
-
-    def validate(self, attrs):
-        if 'avatar' not in attrs or not attrs.get('avatar'):
-            raise serializers.ValidationError(
-                {'avatar': 'Это поле обязательно.'}
-            )
-        return attrs
-
     # FIXME: Убрать валидацию?
+    # def validate_avatar(self, value):
+    #     """"""
+    #     if not value:
+    #         raise serializers.ValidationError('Обязательное поле.')
+    #     return value
 
-
-# NOTE: Заменил на встроенную в Djoser
-class PasswordSetSerializer(serializers.Serializer):
-    """"""
-
-    current_password = serializers.CharField(
-        required=True, label='Текущий пароль'
-    )
-    new_password = serializers.CharField(required=True, label='Новый пароль')
-
-    def validate_current_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError('Неверный текущий пароль')
-        return value
-
-    def validate_new_password(self, value):
-        validators.validate_password(value)
-        return value
+    # def validate(self, attrs):
+    #     """"""
+    #     if 'avatar' not in attrs or not attrs.get('avatar'):
+    #         raise serializers.ValidationError(
+    #             {'avatar': 'Это поле обязательно.'}
+    #         )
+    #     return attrs
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -181,7 +170,6 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Ingredient."""
 
-    # measurement_unit = serializers.StringRelatedField(many=False)
     measurement_unit = serializers.SlugRelatedField(
         many=False, read_only=True, slug_field='name'
     )
@@ -191,21 +179,9 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-class RecipeIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name', read_only=True)
-    measurement_unit = serializers.CharField(
-        source='ingredient.measurement_unit', read_only=True
-    )
-    # id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    # amount = serializers.IntegerField()
+class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
+    """Базовый сериализатор для ингредиентов в рецепте."""
 
-    class Meta:
-        model = RecipeIngredient
-        fields = ('id', 'name', 'measurement_unit', 'amount')
-
-
-class BaseRecipeIngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='ingredient.id')
     amount = serializers.IntegerField(min_value=1)
 
@@ -214,55 +190,38 @@ class BaseRecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-class RecipeIngredientCreateSerializer(BaseRecipeIngredientSerializer):
-    pass
+class RecipeIngredientCreateSerializer(RecipeIngredientBaseSerializer):
+    """Сериализатор для добавления ингредиентов в рецепт."""
 
 
-class RecipeIngredientReadSerializer(BaseRecipeIngredientSerializer):
+class RecipeIngredientReadSerializer(RecipeIngredientBaseSerializer):
+    """Сериализатор для отображения ингредиентов рецепта."""
+
     name = serializers.CharField(source='ingredient.name', read_only=True)
     measurement_unit = serializers.CharField(
         source='ingredient.measurement_unit.name', read_only=True
     )
 
-    class Meta(BaseRecipeIngredientSerializer.Meta):
+    class Meta(RecipeIngredientBaseSerializer.Meta):
         fields = ('id', 'name', 'measurement_unit', 'amount')
         read_only_fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-# class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
-#     id = serializers.IntegerField(source='ingredient.id')
-#     amount = serializers.IntegerField(min_value=1)
-
-#     class Meta:
-#         model = RecipeIngredient
-#         fields = ('id', 'amount')
-
-
-# class RecipeIngredientReadSerializer(serializers.ModelSerializer):
-#     id = serializers.IntegerField(source='ingredient.id', read_only=True)
-#     name = serializers.CharField(source='ingredient.name', read_only=True)
-#     measurement_unit = serializers.CharField(
-#         source='ingredient.measurement_unit.name', read_only=True
-#     )
-
-#     class Meta:
-#         model = RecipeIngredient
-#         fields = ('id', 'name', 'measurement_unit', 'amount')
-
-
-# TODO: вынести в общие миксины повторяющейся код и наследоваться от него, особенно где два сериализатора чтение/запись
-
-
 # XXX: Как вернуть сигнал и логику создания пути файла?
 class RecipeWriteSerializer(serializers.ModelSerializer):
-    """"""
+    """
+    Сериализатор для создания и обновления рецептов.
+
+    Используется только при записи. Включает валидацию ингредиентов,
+    обработку вложенных объектов и логику сохранения.
+    """
 
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
     ingredients = RecipeIngredientCreateSerializer(many=True, write_only=True)
     image = Base64ImageField(required=True, allow_null=False)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
-    )
+    )  # NOTE: Уточнить как работает?
 
     class Meta:
         model = Recipe
@@ -277,12 +236,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate_ingredients(self, value):
+        """
+        Проверяет список ингредиентов на пустоту, дубликаты и существование.
+        """
         if not value:
             msg = 'Список ингредиентов не может быть пустым'
             raise serializers.ValidationError(msg)
 
         ingredient_ids = [item['ingredient']['id'] for item in value]
-
         existing_ingredients = Ingredient.objects.filter(pk__in=ingredient_ids)
 
         if len(ingredient_ids) != len(set(ingredient_ids)):
@@ -295,26 +256,15 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         return value
 
-    def _create_ingredients(self, recipe, ingredients_data):
-        RecipeIngredient.objects.bulk_create(
-            [
-                RecipeIngredient(
-                    recipe=recipe,
-                    ingredient_id=ingredient_data['ingredient']['id'],
-                    amount=ingredient_data['amount'],
-                )
-                for ingredient_data in ingredients_data
-            ]
-        )
-
     @transaction.atomic
     def create(self, validated_data):
+        """Создает рецепт c ингредиентами и тегами."""
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
 
         recipe = Recipe.objects.create(**validated_data)
         if ingredients_data:
-            self._create_ingredients(recipe, ingredients_data)
+            create_recipe_ingredients(recipe, ingredients_data)
 
         if tags_data:
             recipe.tags.set(tags_data)
@@ -327,13 +277,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения рецепта.
+
+    Включает вложенные теги, автора, ингредиенты и вычисляемые поля
+    избранного и корзины.
+    """
+
     author = UserReadSerializer(many=False, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-
     ingredients = RecipeIngredientReadSerializer(
-        source='recipe_ingredients',
-        many=True,
-        read_only=True,
+        source='recipe_ingredients', many=True, read_only=True
     )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -355,10 +309,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def _get_authenticated_user(self):
         """
-        Возвращает пользователя, если он авторизован, иначе None.
+        Возвращает пользователя, если он авторизован.
 
         Returns:
-            User | None: Объект пользователя, либо None.
+            User | None: Авторизованный пользователь или None.
         """
         user = self.context['request'].user
         return user if user.is_authenticated else None
@@ -371,7 +325,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             obj: Объект рецепта.
 
         Returns:
-            bool: True, если рецепт в избранном у пользователя, иначе False.
+            bool: True, если рецепт в избранном, иначе False.
         """
         user = self._get_authenticated_user()
         return Favoriteitem.objects.filter(
@@ -390,49 +344,3 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         """
         user = self._get_authenticated_user()
         return CartItem.objects.filter(recipe=obj, cart__user=user).exists()
-
-
-# =============================================================================
-
-
-# class IngredientModel:
-#     def __init__(self, name, measurement_unit_id) -> None:
-#         self.name = name
-#         self.measurement_unit_id = measurement_unit_id
-
-
-class IngredientSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=255)
-    measurement_unit_id = serializers.IntegerField()
-    created_at = serializers.DateTimeField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
-
-    def create(self, validated_data):
-        return Ingredient.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.measurement_unit_id = validated_data.get(
-            'measurement_unit_id', instance.measurement_unit_id
-        )
-        instance.updated_at = validated_data.get(
-            'updated_at', instance.updated_at
-        )
-        instance.save()
-        return instance
-
-
-# def encode():
-#     model = IngredientModel('apple', 7)
-#     model_sr = IngredientSerializer(model)
-#     print(model_sr.data, type(model_sr.data), sep='\n')
-#     json = JSONRenderer().render(model_sr.data)
-#     print(json)
-
-
-# def decode():
-#     stream = io.BytesIO(b'{"name":"apple","measurement_unit_id":7}')
-#     data = JSONParser().parse(stream)
-#     serializers = IngredientSerializer(data=data)
-#     serializers.is_valid()
-#     print(serializers.validated_data)
