@@ -17,15 +17,14 @@ from rest_framework.views import APIView
 
 from apps.api.filters import RecipeFilter
 from apps.api.pagination import CustomPageNumberPagination
-from apps.api.permissions import DenyAll, IsAdminOrReadOnly
+from apps.api.permissions import DenyAll, IsAdminOrReadOnly, IsAuthorOrReadOnly
 from apps.api.serializers import (
     IngredientSerializer,
-    PasswordSetSerializer,
     RecipeReadSerializer,
     RecipeWriteSerializer,
     TagSerializer,
     UserAvatarSerializer,
-    UserCreateUpdateSerializer,
+    UserCreateSerializer,
     UserReadSerializer,
 )
 from apps.core.constants import DISABLED_ACTIONS_DJOSER
@@ -49,7 +48,7 @@ class CustomUserViewSet(DjoserUserViewSet):
         if self.action == 'set_password':
             return SetPasswordSerializer
         if self.action in ['create', 'update', 'partial_update']:
-            return UserCreateUpdateSerializer
+            return UserCreateSerializer
         return UserReadSerializer
 
     def get_permissions(self):
@@ -57,8 +56,28 @@ class CustomUserViewSet(DjoserUserViewSet):
             return [DenyAll()]
         return super().get_permissions()
 
+    # TODO: Вынести в отдельный миксин класс?
+
     def activation(self, request, *args, **kwargs):
-        raise NotFound()
+        raise NotFound
+
+    def resend_activation(self, request, *args, **kwargs):
+        raise NotFound
+
+    def reset_password(self, request, *args, **kwargs):
+        raise NotFound
+
+    def reset_password_confirm(self, request, *args, **kwargs):
+        raise NotFound
+
+    def set_username(self, request, *args, **kwargs):
+        raise NotFound
+
+    def reset_username(self, request, *args, **kwargs):
+        raise NotFound
+
+    def reset_username_confirm(self, request, *args, **kwargs):
+        raise NotFound
 
     # TODO: Переопределить так остальные ненужные actions
 
@@ -106,7 +125,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action == 'set_password':
             return SetPasswordSerializer
         if self.action in ['create', 'update', 'partial_update']:
-            return UserCreateUpdateSerializer
+            return UserCreateSerializer
         return UserReadSerializer
 
     @action(
@@ -209,11 +228,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeSerializer
-    permission_classes = (AllowAny,)
+    # serializer_class = RecipeSerializer1
+    permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = CustomPageNumberPagination
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def _get_read_response(self, instance, status_code):
+        """
+        Формирует ответ с данными для чтения с помощью сериализатора чтения.
+        """
+        read_serializer = RecipeReadSerializer(
+            instance, context={'request': self.request}
+        )
+        return Response(read_serializer.data, status=status_code)
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -225,19 +254,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save()
 
-        headers = self.get_success_headers(serializer.data)
-        read_serializer = RecipeReadSerializer(
-            recipe, context={'request': request}
-        )
-        return Response(
-            read_serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
+        return self._get_read_response(recipe, status.HTTP_201_CREATED)
 
-    # def perform_create(self, serializer):
-    #     serializer.save(author=self.request.user)
+        # headers = self.get_success_headers(serializer.data)
+        # read_serializer = RecipeReadSerializer(
+        #     recipe, context={'request': request}
+        # )
+        # return Response(
+        #     read_serializer.data,
+        #     status=status.HTTP_201_CREATED,
+        #     headers=headers,
+        # )
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save()
+
+        # read_serializer = RecipeReadSerializer(
+        #     recipe, context={'request': request}
+        # )
+        # return Response(read_serializer.data, status=status.HTTP_200_OK)
+        return self._get_read_response(recipe, status.HTTP_200_OK)
 
 # ===========================================================
 
