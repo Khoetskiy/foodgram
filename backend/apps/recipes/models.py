@@ -7,7 +7,7 @@ from django.core.validators import (
     MinLengthValidator,
     MinValueValidator,
 )
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 
 from apps.core.constants import (
@@ -20,6 +20,7 @@ from apps.core.constants import (
     MIN_AMOUNT_INGREDIENTS,
     MIN_COOK_TIME,
     RECIPE_NAME_MAX_LENGTH,
+    RECIPE_SHORT_CODE_MAX_LENGTH,
     TAG_NAME_MAX_LENGTH,
     TAG_SLUG_MAX_LENGTH,
 )
@@ -31,6 +32,7 @@ from apps.core.validators import (
     validate_safe_filename,
 )
 from apps.recipes.services import (
+    generate_unique_short_code,
     generate_unique_slug,
     recipe_image_upload_path,
 )
@@ -228,7 +230,7 @@ class Recipe(TimeStampModel):
     image = models.ImageField(
         'фото',
         # upload_to=recipe_image_upload_path,
-        upload_to='recipes_test',
+        upload_to='recipes_test',  # FIXME:
         help_text='Фотография готового блюда',
         validators=[
             FileExtensionValidator(
@@ -253,6 +255,15 @@ class Recipe(TimeStampModel):
             ),
         ],
     )
+    short_code = models.CharField(
+        'уникальный код',
+        max_length=RECIPE_SHORT_CODE_MAX_LENGTH,
+        unique=True,
+        editable=False,
+        blank=True,
+        help_text='Уникальная последовательность',
+        # default=generate_short_code  # FIXME: или метод save?
+    )
 
     class Meta(TimeStampModel.Meta):
         verbose_name = 'рецепт'
@@ -274,6 +285,12 @@ class Recipe(TimeStampModel):
 
     def __str__(self) -> str:
         return truncate_text(self.name)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if not self.short_code:
+            self.short_code = generate_unique_short_code(Recipe, 'short_code')
+        super().save(*args, **kwargs)
 
 
 class RecipeIngredient(TimeStampModel):
