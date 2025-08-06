@@ -1,11 +1,24 @@
 import logging
+import random
+import secrets
 import shutil
+import string
 import threading
+import uuid  # FIXME:
 
 from os.path import relpath
 from pathlib import Path
 
-from apps.core.constants import ARCHIVE_ROOT, MAX_ATTEMPTS, TAG_SLUG_MAX_LENGTH
+from django.http import HttpResponse
+from rest_framework import status
+from rest_framework.response import Response
+
+from apps.core.constants import (
+    ARCHIVE_ROOT,
+    MAX_ATTEMPTS,
+    RECIPE_SHORT_CODE_MAX_LENGTH,
+    TAG_SLUG_MAX_LENGTH,
+)
 from apps.core.exceptions import SlugGenerationError
 from apps.core.utils.files import generate_unique_filename, get_safe_extension
 from apps.core.utils.slug import (
@@ -13,6 +26,7 @@ from apps.core.utils.slug import (
     create_slug,
     parse_slug_number,
 )
+from apps.core.utils.text import generate_short_code
 from config.settings import MEDIA_ROOT
 
 logger = logging.getLogger(__name__)
@@ -173,3 +187,165 @@ def create_recipe_ingredients(recipe, ingredients_data: list[dict]) -> None:
             for ingredient_data in ingredients_data
         ]
     )
+
+
+def generate_unique_short_code(
+    model_cls,
+    field_name: str = 'short_code',
+    length: int = RECIPE_SHORT_CODE_MAX_LENGTH,
+    max_attempts: int = MAX_ATTEMPTS,
+) -> str:
+    """Генерирует уникальный код, проверяя уникальность в базе данных."""
+    for _ in range(max_attempts):
+        code = generate_short_code(length)
+        if not model_cls.objects.filter(**{field_name: code}).exists():
+            return code
+    return generate_unique_short_code(
+        model_cls, field_name, length + 1, max_attempts
+    )
+
+
+def get_txt_in_response(ingredients_summary, filename='shopping_cart.txt'):
+    """
+    Создаёт txt-файл списка покупок на основе агрегированных ингредиентов.
+
+    Args:
+        ingredients_summary (list[dict]): список ингредиентов c полями:
+            - 'ingredient__name'
+            - 'ingredient__measurement_unit__name'
+            - 'amount'
+        filename (str): имя файла для скачивания
+
+    Returns:
+        HttpResponse: ответ c файлом для скачивания
+    """
+
+    lines = []
+    lines.append('Список покупок')
+    lines.append('=' * 50)
+    lines.append(
+        f'{"Ингредиент".ljust(28)} | {"Ед. изм.".ljust(8)} | {"Кол-во".rjust(7)}'
+    )
+    lines.append('-' * 50)
+
+    for item in ingredients_summary:
+        name = item['ingredient__name']
+        unit = item['ingredient__measurement_unit__name']
+        amount = str(item['amount'])
+
+        lines.append(f'{name.ljust(28)} | {unit.ljust(8)} | {amount.rjust(7)}')
+
+    # lines = [
+    #     f'- {item["ingredient__name"]} ({item["ingredient__measurement_unit__name"]}) - {item["amount"]}'
+    #     for item in ingredients_summary
+    # ]
+    # FIXME:
+
+    content = '\n'.join(lines)
+
+    response = HttpResponse(content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+# def manage_user_relation_object(
+#     model, relation_filter, related_obj, serializer_class
+# ):
+#     """
+#     Универсальная функция для управления объектами списка пользователя.
+
+#     Args:
+#         model (Model): модель, связующая user и объект.
+#         relation_filter (dict): фильтр, связывающий user и объект.
+#         related_obj (Model): объект, который нужно добавить или удалить.
+#         serializer_class: сериализатор, который возвращается при POST-запросе.
+
+#     Returns:
+#         handler: Обработчик запроса.
+#     """
+
+#     def handler(request):
+#         if request.method == 'POST':
+#             if model.objects.filter(
+#                 **relation_filter, recipe=related_obj
+#             ).exists():
+#                 return Response(
+#                     {'errors': 'Объект уже добавлен'},
+#                     status=status.HTTP_400_BAD_REQUEST,
+#                 )
+#             model.objects.create(**relation_filter, recipe=related_obj)
+#             serializer = serializer_class(
+#                 related_obj, context={'request': request}
+#             )
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+#         if request.method == 'DELETE':
+#             deleted, _ = model.objects.filter(
+#                 **relation_filter, recipe=related_obj
+#             ).delete()
+#             if deleted:
+#                 return Response(status=status.HTTP_204_NO_CONTENT)
+
+#         return Response(
+#             {'errors': 'Объект не найден'},
+#             status=status.HTTP_400_BAD_REQUEST,
+#         )
+#     return handler # FIXME:
+
+
+def manage_user_relation_object(
+    model,
+    relation_filter: dict,
+    related_obj,
+    related_field_name: str,
+    serializer_class,
+    serializer_context: dict,
+    already_exists_message: str = 'Объект уже добавлен',
+    not_found_message: str = 'Объект не найден',
+):
+    """
+    Универсальная функция для управления связями пользователя c объектами.
+
+    Args:
+        model (Model): модель, связующая user и объект.
+        relation_filter (dict): параметры фильтрации.
+        related_obj (Model): объект, c которым создаётся или удаляется связь.
+        related_field_name (str): имя поля в модели.
+        serializer_class: сериализатор, который возвращается при POST-запросе.
+        serializer_context (dict): контекст сериализатора.
+        already_exists_message (str): сообщение, если объект уже добавлен.
+        not_found_message (str): сообщение, если объект не найден.
+
+    Returns:
+        handler: функция-обработчик запроса.
+    """
+
+    def handler(request):
+        filter_kwargs = {**relation_filter, related_field_name: related_obj}
+
+        if request.method == 'POST':
+            if model.objects.filter(**filter_kwargs).exists():
+                return Response(
+                    {'errors': already_exists_message},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            model.objects.create(**filter_kwargs)
+            # serializer = serializer_class(
+            #     related_obj, context={'request': request}
+            # )
+            serializer = serializer_class(
+                related_obj, context=serializer_context
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            deleted, _ = model.objects.filter(**filter_kwargs).delete()
+            if deleted:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {'errors': not_found_message},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return handler
