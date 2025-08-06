@@ -2,27 +2,34 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsAdminOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
+    """
+    Разрешает только безопасные методы всем пользователям.
+    Изменяющие методы доступны только администратору.
+    """
 
-        return bool(request.user and request.user.is_staff)
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS or (
+            request.user and request.user.is_staff
+        )
 
 
 class DenyAll(BasePermission):
+    """Полный запрет доступа для всех пользователей и всех методов."""
+
     def has_permission(self, request, view):
         return False
 
 
 class IsAuthorOrReadOnly(BasePermission):
+    """
+    Разрешает безопасные методы всем пользователям.
+    Изменяющие методы доступны только автору объекта.
+    """
+
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user.is_authenticated
+        return request.method in SAFE_METHODS or request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return obj.author == request.user
+        return request.method in SAFE_METHODS or obj.author == request.user
 
-    # FIXME: Можно ли оптимизировать  в 1 метод?
+# FIXME: Есть ли неиспользуемые permissions? Ели да, то удалить
