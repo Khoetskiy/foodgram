@@ -1,10 +1,9 @@
+import base64
 import logging
 
 from pathlib import Path
 from uuid import uuid4
 
-import base64
-from uuid import uuid4
 from django.core.files.base import ContentFile
 
 from apps.core.constants import (
