@@ -1,8 +1,13 @@
 import re
+import uuid
 
 from deep_translator import GoogleTranslator
 
-from apps.core.constants import TEXT_TRUNCATE_LENGTH, TEXT_TRUNCATE_SUFFIX
+from apps.core.constants import (
+    RECIPE_SHORT_CODE_MAX_LENGTH,
+    TEXT_TRUNCATE_LENGTH,
+    TEXT_TRUNCATE_SUFFIX,
+)
 from apps.core.exceptions import TranslationError
 
 
@@ -92,3 +97,10 @@ def capitalize_name(name: str | None) -> str:
     if not isinstance(name, str):
         return ''
     return name.strip().capitalize()
+
+
+def generate_short_code(length: int = RECIPE_SHORT_CODE_MAX_LENGTH) -> str:
+    """Генерирует короткий код на основе UUID4."""
+    if length <= 0:
+        raise ValueError('Длина должна быть больше 0.')
+    return str(uuid.uuid4()).replace('-', '')[:length].upper()
