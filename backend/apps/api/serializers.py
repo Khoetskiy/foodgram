@@ -41,10 +41,6 @@ class Base64ImageField(serializers.ImageField):
         Raises:
             serializers.ValidationError: При ошибке декодирования base64-строки
         """
-        # if not data:
-        #     if self.required:
-        #         self.fail('required')
-        #     return None  # FIXME
 
         if isinstance(data, str) and data.startswith('data:image'):
             try:
@@ -129,26 +125,10 @@ class UserAvatarSerializer(serializers.ModelSerializer):
     """
 
     avatar = Base64ImageField(required=True, allow_null=False)
-    # BUG: не то смс об пустом поле выводиться?
 
     class Meta:
         model = User
         fields = ('avatar',)
-
-    # FIXME: Убрать валидацию?
-    # def validate_avatar(self, value):
-    #     """"""
-    #     if not value:
-    #         raise serializers.ValidationError('Обязательное поле.')
-    #     return value
-
-    # def validate(self, attrs):
-    #     """"""
-    #     if 'avatar' not in attrs or not attrs.get('avatar'):
-    #         raise serializers.ValidationError(
-    #             {'avatar': 'Это поле обязательно.'}
-    #         )
-    #     return attrs
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -185,13 +165,6 @@ class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
 class RecipeIngredientCreateSerializer(RecipeIngredientBaseSerializer):
     """Сериализатор для добавления ингредиентов в рецепт."""
 
-    # FIXME: Нужно ли? вроде само отрабатывает. Посмотреть в Redoc ошибки 400
-    # def validate_amount(self, value):
-    #     if value < 1:
-    #         msg = 'Количество должно быть больше 0.'
-    #         raise serializers.ValidationError(msg)
-    #     return value
-
 
 class RecipeIngredientReadSerializer(RecipeIngredientBaseSerializer):
     """Сериализатор для отображения ингредиентов рецепта."""
@@ -206,7 +179,6 @@ class RecipeIngredientReadSerializer(RecipeIngredientBaseSerializer):
         read_only_fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-# XXX: Как вернуть сигнал и логику создания пути файла?
 class RecipeWriteSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания и обновления рецептов.
@@ -220,7 +192,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=True, allow_null=False)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
-    )  # NOTE: Уточнить как работает?
+    )
 
     class Meta:
         model = Recipe
@@ -288,10 +260,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             instance.tags.set(tags_data)
 
         return instance
-
-    # def to_representation(self, instance):
-    #     # FIXME: Решить где это реализовывать?
-    #     return RecipeReadSerializer(instance, context=self.context).data
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
@@ -364,4 +332,61 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         return CartItem.objects.filter(recipe=obj, cart__user=user).exists()
 
 
-# TODO: Написать сериализатор для получения короткой ссылки
+class RecipeShortSerializer(serializers.ModelSerializer):
+    """Сериализатор для отображения усеченного списка полей рецепта."""
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class SubscriptionUserSerializer(UserReadSerializer):
+    """
+    Сериализатор для отображения подписок пользователя.
+
+    Расширяет базовый UserReadSerializer, добавляя:
+    - Список рецептов автора (поле `recipes`)
+    - Количество рецептов автора (поле `recipes_count`)
+
+    Attributes:
+        recipes_count (SerializerMethodField): Количество рецептов автора.
+        recipes (SerializerMethodField): Список рецептов в сокращённой форме.
+    """
+
+    recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+
+    class Meta(UserReadSerializer.Meta):
+        fields = (*UserReadSerializer.Meta.fields, 'recipes', 'recipes_count')
+
+    def get_recipes_count(self, obj):
+        """
+        Вычисляемое поле, показывающее количество рецептов автора.
+
+        Args:
+            obj (User): Автор, на которого подписан текущий пользователь.
+
+        Returns:
+            int: Общее число рецептов у автора.
+        """
+        return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        """
+        Вычисляемое поле, возвращающее список рецептов автора.
+
+        Ограниченный параметром recipes_limit.
+
+        Args:
+            obj (User): Автор, чьи рецепты нужно получить.
+
+        Returns:
+            list: Список рецептов ограниченный по количеству.
+        """
+        limit = self.context.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if limit is not None:
+            recipes = recipes[: int(limit)]
+        return RecipeShortSerializer(
+            recipes, many=True, context=self.context
+        ).data
