@@ -140,3 +140,6 @@ dmypy.json
 
 static/
 media/
+
+serializers(old).py
+serializers(beta)/
