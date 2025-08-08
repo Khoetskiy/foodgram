@@ -143,3 +143,5 @@ media/
 
 serializers(old).py
 serializers(beta)/
+views(old).py
+views(beta)/
