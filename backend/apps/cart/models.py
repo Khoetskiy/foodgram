@@ -38,7 +38,7 @@ class CartItem(TimeStampModel):
     """
     Элемент корзины: связь между корзиной и рецептом.
 
-    Один CartItem связывает одну Cart с одним Recipe.
+    Один CartItem связывает одну Cart c одним Recipe.
 
     Attributes:
         cart (Cart): Корзина, к которой относится этот элемент.

@@ -66,14 +66,3 @@ class CartAdmin(admin.ModelAdmin):
                 'items', queryset=CartItem.objects.select_related('recipe')
             )
         )  # REVIEW: Получше разобраться как это работает
-
-
-# FIXME: Убрать из-за ненадобности
-# @admin.register(CartItem)
-# class CartItemAdmin(admin.ModelAdmin):
-#     """Админ-панель для модели CartItem."""
-
-#     list_display = ('cart', 'recipe', 'updated_at', 'created_at')
-#     search_fields = ('cart__user__username', 'recipe__name')
-#     list_filter = ('updated_at', 'created_at')
-#     autocomplete_fields = ('cart', 'recipe')
