@@ -9,8 +9,8 @@
     from utils import translate_text, create_slug
 
 Модули:
-    - files.py      — работа с файлами
-    - html.py       — работа с HTML
+    - files.py      — работа c файлами
+    - html.py       — работа c HTML
     - slug.py       — создание и обработка slug'ов
     - text.py       — перевод, нормализация и обрезка текста
     - time.py       — преобразование и форматирование дат и времени

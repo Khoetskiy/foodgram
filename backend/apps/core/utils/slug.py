@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from django.utils.text import slugify
@@ -9,7 +11,6 @@ from apps.core.utils.text import is_cyrillic, translate_text
 def create_slug(text: str, allow_unicode: bool = False) -> str:
     """
     Создаёт slug из текста. Если в тексте кириллица — переводит на английский.
-
 
     Args:
         text: Исходный текст для создания slug.
@@ -48,7 +49,7 @@ def parse_slug_number(slug: str) -> tuple[str, int | None]:
     Разделяет slug и числовой суффикс, если есть.
 
     Args:
-        slug (str): Исходный slug, возможно с числовым суффиксом.
+        slug (str): Исходный slug, возможно c числовым суффиксом.
 
     Returns:
         tuple[str, int | None]: slug и стартовое число для итерации.
@@ -70,6 +71,6 @@ def append_number_to_slug(slug: str, number: int) -> str:
         number (int): Число для добавления.
 
     Returns:
-        str: Новый slug с числовым суффиксом.
+        str: Новый slug c числовым суффиксом.
     """
     return f'{slug}-{number}'

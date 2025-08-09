@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import uuid
 
@@ -58,7 +60,7 @@ def translate_text(text: str, target_language: str = 'en') -> str:
     Returns:
         str: Переведённый текст.
     """
-    # FIXME: Избавиться от внешней библиотеки GoogleTranslator
+
     try:
         return GoogleTranslator(
             source='auto', target=target_language
@@ -100,7 +102,16 @@ def capitalize_name(name: str | None) -> str:
 
 
 def generate_short_code(length: int = RECIPE_SHORT_CODE_MAX_LENGTH) -> str:
-    """Генерирует короткий код на основе UUID4."""
+    """
+    Генерирует короткий код на основе UUID4.
+
+    Args:
+        length (int): Максимальная длина.
+
+    Returns:
+        str: Код `length` длины c заглавными буквами.
+    """
     if length <= 0:
-        raise ValueError('Длина должна быть больше 0.')
+        msg = 'Длина должна быть больше 0.'
+        raise ValueError(msg)
     return str(uuid.uuid4()).replace('-', '')[:length].upper()
