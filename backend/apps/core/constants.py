@@ -32,10 +32,24 @@ ALLOWED_EXTENSIONS = ('jpg', 'jpeg', 'png')
 DEFAULT_EXT = 'jpg'
 MAX_SIZE_FILE: int = 5  # MB
 
-# --- Для core/utils ---
+# --- misc ---
 MAX_ATTEMPTS = 1000
 ARCHIVE_ROOT = 'archive'
 UUID_FILENAME_LENGTH = 10
+SHORT_LINK_PREFIX = 's'
+
+# --- API ---
+DISABLED_ACTIONS_DJOSER = [
+    'activation',
+    'resend_activation',
+    'reset_password',
+    'reset_password_confirm',
+    'set_username',
+    'reset_username',
+    'reset_username_confirm',
+]
+PAGE_SIZE_PAGINATION = 10
+MAX_PAGE_SIZE_PAGINATION = 50
 
 
 # TODO: Вынести в отдельный файл `core/constants/help_texts.py`?
@@ -71,18 +85,3 @@ FAVORITEITEM_RECIPE_HELP = 'Рецепт, добавленный в избран
 
 SUBSCRIBE_USER_HELP = 'Пользователь, который подписывается.'
 SUBSCRIBE_AUTHOR_HELP = 'Пользователь, на которого подписываются.'
-
-
-DISABLED_ACTIONS_DJOSER = [
-    'activation',
-    'resend_activation',
-    'reset_password',
-    'reset_password_confirm',
-    'set_username',
-    'reset_username',
-    'reset_username_confirm',
-]
-
-# --- Управление pagination ---
-PAGE_SIZE_PAGINATION = 10
-MAX_PAGE_SIZE_PAGINATION = 50
