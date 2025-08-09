@@ -295,7 +295,7 @@ class ShortLinkMixin:
         recipe = self.get_object()
 
         if not hasattr(recipe, 'short_code') or not recipe.short_code:
-            return Responce(
+            return Response(
                 {'detail': 'Короткая ссылка для рецепта недоступна'},
                 status=status.HTTP_404_NOT_FOUND,
             )
