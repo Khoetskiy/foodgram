@@ -120,7 +120,7 @@ class CustomUser(AbstractUser):
     )
     avatar = models.ImageField(
         'аватар',
-        upload_to='avatars/',
+        upload_to='avatars/',  # TODO: Сделать загрузку как c фото рецептами?
         blank=True,
         null=True,
         help_text=CUSTOMUSER_AVATAR_HELP,
@@ -133,7 +133,6 @@ class CustomUser(AbstractUser):
             validate_safe_filename,
             validate_file_size,
         ],
-        # default=
     )
 
     class Meta:
@@ -167,9 +166,8 @@ class CustomUser(AbstractUser):
         self.first_name = capitalize_name(self.first_name)
         self.last_name = capitalize_name(self.last_name)
         if self.first_name.lower() == self.last_name.lower():
-            raise ValidationError(
-                'Имя и фамилия не должны совпадать.', code='name_match'
-            )
+            msg = 'Имя и фамилия не должны совпадать.'
+            raise ValidationError(msg, code='name_match')
         super().clean()
 
     def save(self, *args, **kwargs):
@@ -204,7 +202,7 @@ class Favorite(TimeStampModel):
         return f'Избранное пользователя: {str(self.user.username).upper()}'
 
 
-class Favoriteitem(TimeStampModel):  # FIXME: Заменить на FavoriteItem
+class Favoriteitem(TimeStampModel):
     """
     Элемент избранного: связь между избранным и рецептом.
 
@@ -282,9 +280,8 @@ class Subscribe(TimeStampModel):
 
     def clean(self):
         if self.user == self.author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя.', code='prohibit_yourself'
-            )
+            msg = 'Нельзя подписаться на самого себя.'
+            raise ValidationError(msg, code='prohibit_yourself')
         super().clean()
 
     def __str__(self) -> str:
