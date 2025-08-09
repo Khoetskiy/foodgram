@@ -31,10 +31,9 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
-    'rest_framework.authtoken',  # Отображается в админке
+    'rest_framework.authtoken',
     'djoser',
     'django_filters',
-    # 'rest_framework_simplejwt',
 ]
 
 LOCAL_APPS = [
@@ -56,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.ProjectExceptionMiddleware',
 ]
 
 
@@ -76,9 +76,17 @@ TEMPLATES = [
 ]
 
 
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+
+
 USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
+
 if USE_SQLITE:
+    STATIC_ROOT = BASE_DIR / 'static'
+    MEDIA_ROOT = BASE_DIR / 'media'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -86,13 +94,16 @@ if USE_SQLITE:
         }
     }
 else:
+    STATIC_ROOT = '/app/collectstatic/static'
+    MEDIA_ROOT = '/app/media'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='django_db'),
-            'USER': config('DB_USER', default='django_user'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
+            'NAME': config('POSTGRES_DB', default='django_db'),
+            'USER': config('POSTGRES_USER', default='django_user'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='db'),
             'PORT': config('DB_PORT', default='5432'),
         }
     }
@@ -118,16 +129,6 @@ LANGUAGE_CODE = 'ru-Ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
-
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend' / 'static',
-]
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -193,153 +194,35 @@ LOGGING = {
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERS_CLASSES': [
+    'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # веб-версия API
-    ],  # FIXME: На проде отключить
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # IsAuthenticated
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',  # по умолчанию
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day',
+    },
 }
 
 DJOSER = {
-    # 'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    # 'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    # 'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    # 'SEND_ACTIVATION_EMAIL': True,
-    'SERIALIZERS': {
-        # 'set_password': 'djoser.serializers.SetPasswordSerializer',
-    },
-    # 'PERMISSIONS': {
-    #     'activation': ['rest_framework.permissions.AllowAny'],
-    #     'password_reset': ['rest_framework.permissions.AllowAny'],
-    #     'password_reset_confirm': ['rest_framework.permissions.AllowAny'],
-    #     'set_password': ['djoser.permissions.CurrentUserOrAdmin'],
-    #     'username_reset': ['rest_framework.permissions.AllowAny'],
-    #     'username_reset_confirm': ['rest_framework.permissions.AllowAny'],
-    #     'set_username': ['djoser.permissions.CurrentUserOrAdmin'],
-    #     'user_create': ['rest_framework.permissions.AllowAny'],
-    #     'user_delete': ['djoser.permissions.CurrentUserOrAdmin'],
-    #     'user': ['djoser.permissions.CurrentUserOrAdmin'],
-    #     'user_list': ['djoser.permissions.CurrentUserOrAdmin'],
-    #     'token_create': ['rest_framework.permissions.AllowAny'],
-    #     'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
-    # },
+    'LOGIN FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'HIDE_USERS': False,
+    'LOGIN_AFTER_REGISTRATION': True,
+    'TOKEN_LENGTH': 40,
 }
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=90),  # HACK: временно
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': False,
-    'UPDATE_LAST_LOGIN': False,
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': '',
-    'AUDIENCE': None,
-    'ISSUER': None,
-    'JSON_ENCODER': None,
-    'JWK_URL': None,
-    'LEEWAY': 0,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'TOKEN_TYPE_CLAIM': 'token_type',
-    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-    'JTI_CLAIM': 'jti',
-    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
-    'TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
-    'TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSerializer',
-    'TOKEN_VERIFY_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenVerifySerializer',
-    'TOKEN_BLACKLIST_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenBlacklistSerializer',
-    'SLIDING_TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer',
-    'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
-}
-
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.TokenAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',
-#     ],
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.IsAuthenticated',
-#     ],
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 20,
-#     'DEFAULT_RENDERER_CLASSES': [
-#         'rest_framework.renderers.JSONRenderer',
-#     ],
-#     'DEFAULT_PARSER_CLASSES': [
-#         'rest_framework.parsers.JSONParser',
-#         'rest_framework.parsers.FormParser',
-#         'rest_framework.parsers.MultiPartParser',
-#     ],
-#     'DEFAULT_THROTTLE_CLASSES': [
-#         'rest_framework.throttling.AnonRateThrottle',
-#         'rest_framework.throttling.UserRateThrottle',
-#     ],
-#     'DEFAULT_THROTTLE_RATES': {
-#         'anon': '100/hour',
-#         'user': '1000/hour',
-#     },
-# }
-
-
-# # Настройки CORS
-# CORS_ALLOWED_ORIGINS = [
-#     origin.strip()
-#     for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-#     if origin.strip()
-# ]
-
-# CORS_ALLOW_CREDENTIALS = True
-
-# # Настройки CSRF
-# CSRF_TRUSTED_ORIGINS = [
-#     origin.strip()
-#     for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
-#     if origin.strip()
-# ]
-
-# # Настройки безопасности
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# X_FRAME_OPTIONS = 'DENY'
-
-# # Настройки сессий
-# SESSION_COOKIE_SECURE = not DEBUG
-# SESSION_COOKIE_HTTPONLY = True
-# SESSION_COOKIE_AGE = 86400  # 24 часа
-
-# # Настройки CSRF куки
-# CSRF_COOKIE_SECURE = not DEBUG
-# CSRF_COOKIE_HTTPONLY = True
-
-
-# # Настройки электронной почты
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-# DEFAULT_FROM_EMAIL = os.environ.get(
-#     'DEFAULT_FROM_EMAIL', 'noreply@example.com'
-# )
