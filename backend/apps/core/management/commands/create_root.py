@@ -25,7 +25,7 @@ class Command(BaseCommand):
         except IntegrityError as e:
             self.stderr.write(
                 self.style.ERROR(
-                    f'Ошибка: {e}\nПользователь с такими данными уже существует!'
+                    f'Ошибка: {e}Пользователь с такими данными уже существует!'
                 )
             )
         except (ValueError, TypeError) as e:
@@ -34,6 +34,8 @@ class Command(BaseCommand):
             )
         else:
             msg = 'Создан супер-пользователь с данными:'
-            data = f'  username: {username}\n  email: {email}\n  password: {password}'
+            data = (
+                f'username: {username}\nemail: {email}\npassword: {password}'
+            )
             self.stdout.write(self.style.SUCCESS(msg))
             self.stdout.write(self.style.MIGRATE_LABEL(data))
