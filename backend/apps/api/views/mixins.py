@@ -185,7 +185,7 @@ class FavoriteManagerMixin:
         url_path='favorite',
         permission_classes=[IsAuthenticated],
     )
-    def manage_favorite(self, request, pk=None):
+    def manage_favorite(self, request, **kwargs):
         """Добавление или удаление рецепта из избранного."""
         recipe = self.get_object()
         favorite, _ = Favorite.objects.get_or_create(user=request.user)
@@ -257,7 +257,7 @@ class ShoppingCartManagerMixin:
         url_path='shopping_cart',
         permission_classes=[IsAuthenticated],
     )
-    def manage_shopping_cart(self, request, pk=None):
+    def manage_shopping_cart(self, request, **kwargs):
         """Добавление или удаление рецепта из корзины."""
         recipe = self.get_object()
         cart, _ = Cart.objects.get_or_create(user=request.user)
