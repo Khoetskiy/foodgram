@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_safe_extension(filename: str) -> str:
-    # REVIEW: Убрать, тк валидация в поле image модели Recipe?
     """
     Получает безопасное расширение файла, если оно разрешено.
 
@@ -30,12 +29,18 @@ def get_safe_extension(filename: str) -> str:
     Returns:
         str: Безопасное расширение.
     """
-    ext = Path(filename).suffix
-    if not ext or ext.lower().lstrip('.') not in ALLOWED_EXTENSIONS:
-        msg = f'Файл: "{filename}" без расширения или недопустимое расширение'
-        logger.warning(msg)
-        return f'.{DEFAULT_EXT}'
-    return ext.lower()
+    ext = Path(filename).suffix.lower()
+
+    if ext.lstrip('.') in ALLOWED_EXTENSIONS:
+        return ext
+
+    logger.warning(
+        'Файл "%s" имеет недопустимое расширение или не содержит расширения. '
+        'Подставлено расширение по умолчанию: .%s',
+        filename,
+        DEFAULT_EXT,
+    )
+    return f'.{DEFAULT_EXT}'
 
 
 def generate_unique_filename(ext: str) -> str:
