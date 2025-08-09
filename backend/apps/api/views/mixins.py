@@ -148,9 +148,7 @@ class SubscriptionMixin:
         url_path='subscribe',
         permission_classes=[IsAuthenticated],
     )
-    def manage_subscribe(
-        self, request, id=None
-    ):  # FIXME: почему требует id вместо pk?
+    def manage_subscribe(self, request, **kwargs):
         """Подписка или отписка от пользователя."""
         user = request.user
         author = self.get_object()
