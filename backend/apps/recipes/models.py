@@ -213,7 +213,7 @@ class Recipe(TimeStampModel):
     author = models.ForeignKey(
         User,
         verbose_name='автор',
-        on_delete=models.PROTECT,  # FIXME: поменять поведение
+        on_delete=models.PROTECT,
         help_text='Автор рецепта',
     )
     text = models.TextField('описание', help_text='Описание рецепта')
@@ -229,8 +229,7 @@ class Recipe(TimeStampModel):
     )
     image = models.ImageField(
         'фото',
-        # upload_to=recipe_image_upload_path,
-        upload_to='recipes_test',  # FIXME:
+        upload_to=recipe_image_upload_path,
         help_text='Фотография готового блюда',
         validators=[
             FileExtensionValidator(
@@ -240,8 +239,7 @@ class Recipe(TimeStampModel):
             ),
             validate_safe_filename,
             validate_file_size,
-            # FIXME: Пофиксить кастомную валидацию
-        ],  # TODO: Картинка должна быть закодированная в Base64 на API
+        ],
     )
     cooking_time = models.PositiveIntegerField(
         'время приготовления',
@@ -262,7 +260,6 @@ class Recipe(TimeStampModel):
         editable=False,
         blank=True,
         help_text='Уникальная последовательность',
-        # default=generate_short_code  # FIXME: или метод save?
     )
 
     class Meta(TimeStampModel.Meta):

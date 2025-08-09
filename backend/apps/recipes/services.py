@@ -1,10 +1,6 @@
 import logging
-import random
-import secrets
 import shutil
-import string
 import threading
-import uuid  # FIXME:
 
 from os.path import relpath
 from pathlib import Path
@@ -43,7 +39,7 @@ def generate_unique_slug(
     max_length_slug: int = TAG_SLUG_MAX_LENGTH,
 ) -> str:
     """
-    Генерирует уникальный slug для значения поля, с учётом базы данных.
+    Генерирует уникальный slug для значения поля, c учётом базы данных.
 
     Args:
         field_value (str): Значение поля для slug.
@@ -100,17 +96,11 @@ def recipe_image_upload_path(instance, filename: str) -> Path:
         filename (str): оригинальное имя файла
 
     Returns:
-        Путь вида 'recipes/user_<user_id>/<recipe_id>/<uuid>.<ext>'
+        Путь вида `recipes/user_<user_id>/<recipe_id>/<uuid>.<ext>`
     """
-    ext: str = get_safe_extension(filename)
-    new_filename: str = generate_unique_filename(ext)
-
-    return (
-        Path('recipes')
-        / f'user_{instance.author.id}'
-        / f'recipe_{instance.id if instance.id else "new"}'
-        / new_filename
-    )
+    ext = get_safe_extension(filename)
+    new_filename = generate_unique_filename(ext)
+    return Path('recipes') / f'user_{instance.author.id}' / new_filename
 
 
 def _get_old_image_path() -> dict:
@@ -135,9 +125,9 @@ def archive_file_by_path(old_path: str) -> None:
     """
     Перемещает файл по указанному пути в директорию архива.
 
-    Сохраняет относительную структуру пути относительно MEDIA_ROOT.
-    Если файл отсутствует, записывает предупреждение в лог.
-    При ошибках перемещения или создания директорий логирует исключения.
+    - Сохраняет относительную структуру пути относительно MEDIA_ROOT.
+    - Если файл отсутствует, записывает предупреждение в лог.
+    - При ошибках перемещения или создания директорий логирует исключения.
 
     Args:
         old_path (str): Абсолютный путь к файлу, который нужно архивировать.
@@ -148,17 +138,17 @@ def archive_file_by_path(old_path: str) -> None:
         OSError: Ошибка файловой системы.
     """
     if not Path(old_path).is_file():
-        logger.warning(f'Файл для архивирования не найден: {old_path}')
+        logger.warning('Файл для архивирования не найден: %s', old_path)
         return
 
     try:
         relative_path = relpath(old_path, MEDIA_ROOT)
-        archive_root = MEDIA_ROOT / ARCHIVE_ROOT
+        archive_root = Path(MEDIA_ROOT) / Path(ARCHIVE_ROOT)
         new_path = archive_root / relative_path
 
         Path(new_path).parent.mkdir(parents=True, exist_ok=True)
         shutil.move(old_path, new_path)
-        logger.info(f'Файл "{relative_path}" перемещен в архив')
+        logger.info('Файл "%s" перемещен в архив', relative_path)
     except IndexError:
         logger.exception('Ошибка структуры пути при архивировании')
     except shutil.Error:
@@ -195,7 +185,20 @@ def generate_unique_short_code(
     length: int = RECIPE_SHORT_CODE_MAX_LENGTH,
     max_attempts: int = MAX_ATTEMPTS,
 ) -> str:
-    """Генерирует уникальный код, проверяя уникальность в базе данных."""
+    """
+    Генерирует код, проверяя уникальность в базе данных.
+
+    После `max_attempts` попыток увеличивает длину на 1.
+
+    Args:
+        model_cls (Model): Класс модели
+        field_name (str): Поле модели
+        length (int): Длина уникального кода
+        max_attempts (int): Количество попыток создания уникального кода
+
+    Returns:
+        str: Уникальный код
+    """
     for _ in range(max_attempts):
         code = generate_short_code(length)
         if not model_cls.objects.filter(**{field_name: code}).exists():
@@ -205,15 +208,17 @@ def generate_unique_short_code(
     )
 
 
-def get_txt_in_response(ingredients_summary, filename='shopping_cart.txt'):
+def get_txt_in_response(
+    ingredients_summary: list[dict], filename: str = 'shopping_cart.txt'
+) -> HttpResponse:
     """
     Создаёт txt-файл списка покупок на основе агрегированных ингредиентов.
 
     Args:
         ingredients_summary (list[dict]): список ингредиентов c полями:
-            - 'ingredient__name'
-            - 'ingredient__measurement_unit__name'
-            - 'amount'
+        - 'ingredient__name'
+        - 'ingredient__measurement_unit__name'
+        - 'amount'
         filename (str): имя файла для скачивания
 
     Returns:
@@ -224,7 +229,8 @@ def get_txt_in_response(ingredients_summary, filename='shopping_cart.txt'):
     lines.append('Список покупок')
     lines.append('=' * 50)
     lines.append(
-        f'{"Ингредиент".ljust(28)} | {"Ед. изм.".ljust(8)} | {"Кол-во".rjust(7)}'
+        f'{"Ингредиент".ljust(28)} | '
+        f'{"Ед. изм.".ljust(8)} | {"Кол-во".rjust(7)}'
     )
     lines.append('-' * 50)
 
@@ -235,62 +241,11 @@ def get_txt_in_response(ingredients_summary, filename='shopping_cart.txt'):
 
         lines.append(f'{name.ljust(28)} | {unit.ljust(8)} | {amount.rjust(7)}')
 
-    # lines = [
-    #     f'- {item["ingredient__name"]} ({item["ingredient__measurement_unit__name"]}) - {item["amount"]}'
-    #     for item in ingredients_summary
-    # ]
-    # FIXME:
-
     content = '\n'.join(lines)
 
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
-
-
-# def manage_user_relation_object(
-#     model, relation_filter, related_obj, serializer_class
-# ):
-#     """
-#     Универсальная функция для управления объектами списка пользователя.
-
-#     Args:
-#         model (Model): модель, связующая user и объект.
-#         relation_filter (dict): фильтр, связывающий user и объект.
-#         related_obj (Model): объект, который нужно добавить или удалить.
-#         serializer_class: сериализатор, который возвращается при POST-запросе.
-
-#     Returns:
-#         handler: Обработчик запроса.
-#     """
-
-#     def handler(request):
-#         if request.method == 'POST':
-#             if model.objects.filter(
-#                 **relation_filter, recipe=related_obj
-#             ).exists():
-#                 return Response(
-#                     {'errors': 'Объект уже добавлен'},
-#                     status=status.HTTP_400_BAD_REQUEST,
-#                 )
-#             model.objects.create(**relation_filter, recipe=related_obj)
-#             serializer = serializer_class(
-#                 related_obj, context={'request': request}
-#             )
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         if request.method == 'DELETE':
-#             deleted, _ = model.objects.filter(
-#                 **relation_filter, recipe=related_obj
-#             ).delete()
-#             if deleted:
-#                 return Response(status=status.HTTP_204_NO_CONTENT)
-
-#         return Response(
-#             {'errors': 'Объект не найден'},
-#             status=status.HTTP_400_BAD_REQUEST,
-#         )
-#     return handler # FIXME:
 
 
 def manage_user_relation_object(
@@ -330,9 +285,6 @@ def manage_user_relation_object(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             model.objects.create(**filter_kwargs)
-            # serializer = serializer_class(
-            #     related_obj, context={'request': request}
-            # )
             serializer = serializer_class(
                 related_obj, context=serializer_context
             )

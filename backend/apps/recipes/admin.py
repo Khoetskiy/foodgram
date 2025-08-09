@@ -1,6 +1,3 @@
-# REVIEW: Есть ли повторяющийся код?
-# TODO: Настроить регистронезависимый поиск по названию (вхождение в начало, опционально — в произвольном месте)  # noqa: E501
-
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db.models import Count
@@ -48,7 +45,7 @@ class IngredientRecipeInLine(admin.TabularInline):
 
     @admin.display(description='Ед. изм.')
     def get_measurement_unit(self, obj):
-        """Показывает единицу измерения, связанную с ингредиентом."""
+        """Показывает единицу измерения, связанную c ингредиентом."""
         if obj.ingredient_id:
             return obj.ingredient.measurement_unit.name
         return '-'
