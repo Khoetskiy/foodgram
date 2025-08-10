@@ -74,7 +74,7 @@ class AvatarManagementMixin:
         user = request.user
 
         if request.method == 'PUT':
-            self._upload_avatar(user, request.data)
+            return self._upload_avatar(user, request.data)
 
         if request.method == 'DELETE':
             return self._delete_avatar(user)
