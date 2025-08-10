@@ -26,6 +26,7 @@ from apps.core.constants import (
 )
 from apps.core.exceptions import SlugGenerationError
 from apps.core.models import TimeStampModel
+from apps.core.services import get_upload_path
 from apps.core.utils import truncate_text
 from apps.core.validators import (
     validate_file_size,
@@ -34,7 +35,6 @@ from apps.core.validators import (
 from apps.recipes.services import (
     generate_unique_short_code,
     generate_unique_slug,
-    recipe_image_upload_path,
 )
 
 User = get_user_model()
@@ -229,7 +229,7 @@ class Recipe(TimeStampModel):
     )
     image = models.ImageField(
         'фото',
-        upload_to=recipe_image_upload_path,
+        upload_to=get_upload_path,
         help_text='Фотография готового блюда',
         validators=[
             FileExtensionValidator(
