@@ -32,6 +32,7 @@ from apps.core.constants import (
     USERNAME_VALIDATION_REGEX,
 )
 from apps.core.models import TimeStampModel
+from apps.core.services import get_upload_path
 from apps.core.utils import capitalize_name
 from apps.core.validators import validate_file_size, validate_safe_filename
 
@@ -120,7 +121,8 @@ class CustomUser(AbstractUser):
     )
     avatar = models.ImageField(
         'аватар',
-        upload_to='avatars/',  # [ ]: Сделать загрузку как c фото рецептами?
+        # upload_to='avatars/',  # [ ]: Сделать загрузку как c фото рецептами?
+        upload_to=get_upload_path,
         blank=True,
         null=True,
         help_text=CUSTOMUSER_AVATAR_HELP,
