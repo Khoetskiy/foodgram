@@ -16,7 +16,6 @@ from apps.core.constants import (
     TAG_SLUG_MAX_LENGTH,
 )
 from apps.core.exceptions import SlugGenerationError
-from apps.core.utils.files import generate_unique_filename, get_safe_extension
 from apps.core.utils.slug import (
     append_number_to_slug,
     create_slug,
@@ -87,34 +86,19 @@ def generate_unique_slug(
     raise RuntimeError(msg)
 
 
-def recipe_image_upload_path(instance, filename: str) -> Path:
-    """
-    Возвращает путь для загрузки фотографии рецепта внутри MEDIA_ROOT:
-
-    Args:
-        instance: объект модели Recipe
-        filename (str): оригинальное имя файла
-
-    Returns:
-        Путь вида `recipes/user_<user_id>/<uuid>.<ext>`
-    """
-    ext = get_safe_extension(filename)
-    new_filename = generate_unique_filename(ext)
-    return Path('recipes') / f'user_{instance.author.id}' / new_filename
-
-
 def _get_old_image_path() -> dict:
     """
     Возвращает потокобезопасное хранилище старых путей фотографий.
 
-    Используется для временного кеширования старых путей фотографий рецептов
+    Используется для временного кеширования старых путей фотографий
     между сигналами pre_save и post_save.
     Хранение реализовано через threading.local,
     чтобы избежать конфликтов при параллельных запросах.
 
     Returns:
-        dict: Словарь, в котором ключами являются ID объектов Recipe,
-        a значениями - пути к фотографиям.
+        dict: Словарь для хранения старых путей файлов,
+                в котором ключи - ID объектов,
+                a значения - пути к фотографиям.
     """
     if not hasattr(_local, 'old_image_path'):
         _local.old_image_path = {}
