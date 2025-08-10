@@ -91,6 +91,9 @@ class Ingredient(TimeStampModel):
         'название',
         max_length=INGREDIENT_NAME_MAX_LENGTH,
         unique=True,
+        help_text=(
+            f'Название ингредиента (до {INGREDIENT_NAME_MAX_LENGTH} символов)'
+        ),
         validators=[
             MinLengthValidator(
                 INGREDIENT_NAME_MIN_LENGTH,
