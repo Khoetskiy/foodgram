@@ -1,5 +1,4 @@
-# Старый вариант + тесты 
-version: '3.8'
+version: "3.8"
 
 volumes:
   pg_data:
@@ -21,15 +20,10 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   backend:
     container_name: foodgram-back
-    build: backend/
+    image: khoetskiy/foodgram_backend:latest
     env_file:
       - .env
     depends_on:
@@ -37,47 +31,27 @@ services:
         condition: service_healthy
         restart: true
     volumes:
-      - static:/app/staticfiles
+      - static:/app/collectstatic
       - media:/app/media
-      # - static:/app/static/
-      # - static_backend:/app/static/
     restart: unless-stopped
 
   frontend:
-    container_name: foodgram-front
-    build: frontend/
+    image: khoetskiy/foodgram_frontend:latest
+    container_name: foodgram-frontend
     volumes:
-      # - static_frontend:/app/static/
-      # - static:/app/result_build/
-      - ./frontend:/app
-      - ./frontend/build:/app/result_build
-      # - static:/app/static/
-      # - frontend_build:/app/result_build
+      - static:/app/result_build
     depends_on:
       - backend
-    # command: sh -c "npm install && npm run build && cp -r build/* result_build/"
-    # restart: "no"
 
   nginx:
-    container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: khoetskiy/foodgram_nginx:latest
+    container_name: foodgram-nginx
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./frontend/build:/usr/share/nginx/html/
-      - ./docs:/usr/share/nginx/html/api/docs/
-      - media:/media
-      - static:/static
-      # # - static:/usr/share/nginx/html/
-      # - static:/usr/share/nginx/html/
-      # - media:/usr/share/nginx/media/
-      # # - static_frontend:/usr/share/nginx/html/
-      # # - static_backend:/usr/share/nginx/html/static_backend/
-      # # - media:/usr/share/nginx/html/media/
-      # # - ./docs/:/usr/share/nginx/html/api/docs/
-      # # - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static:/usr/share/nginx/html
+      - media:/usr/share/nginx/html/media
     depends_on:
-      - backend
       - frontend
+      - backend
     restart: unless-stopped
