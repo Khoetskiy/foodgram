@@ -107,4 +107,3 @@ class UserRecipeCollectionAdminMixin:
                     queryset=self.model_item.objects.select_related('recipe'),
                 )
             )
-        return qs  # [ ]: Получше разобраться как это работает Prefetch

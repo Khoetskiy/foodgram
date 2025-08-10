@@ -51,11 +51,6 @@ DISABLED_ACTIONS_DJOSER = [
 PAGE_SIZE_PAGINATION = 10
 MAX_PAGE_SIZE_PAGINATION = 50
 
-
-# [ ]: Вынести в отдельный файл `core/constants/help_texts.py`?
-
-# [ ]: Сделать также константы для остальных приложений?
-
 # --- Help texts для моделей приложения users ---
 CUSTOMUSER_USERNAME_HELP = (
     'Уникальное имя пользователя. '
