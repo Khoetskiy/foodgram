@@ -1,6 +1,7 @@
 class ProjectError(Exception):
     """Базовый класс для всех ошибок проекта."""
 
+
 class CantBeNameFileError(ProjectError):
     """
     Исключение при недопустимом имени файла.

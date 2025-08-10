@@ -1,5 +1,4 @@
 # ruff: noqa
-import os
 
 from .base import *
 

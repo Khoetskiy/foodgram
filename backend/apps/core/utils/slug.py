@@ -43,7 +43,6 @@ def create_slug(text: str, allow_unicode: bool = False) -> str:
     return slug
 
 
-
 def parse_slug_number(slug: str) -> tuple[str, int | None]:
     """
     Разделяет slug и числовой суффикс, если есть.
@@ -59,7 +58,6 @@ def parse_slug_number(slug: str) -> tuple[str, int | None]:
         slug, number = match.groups()
         return slug, int(number) + 1
     return slug, None
-
 
 
 def append_number_to_slug(slug: str, number: int) -> str:
