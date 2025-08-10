@@ -128,12 +128,11 @@ class FavoriteAdmin(UserRecipeCollectionAdminMixin, admin.ModelAdmin):
     model_item = Favoriteitem
 
 
-# # [ ]: Удалить из-за ненадобности?
 @admin.register(Subscribe)
 class SubscribeAdmin(ReadOnlyInLineMixin, admin.ModelAdmin):
     """Админ-панель для модели Subscribe."""
 
     list_display = ('user', 'author')
     readonly_fields = ('user', 'author')
-    search_fields = ('user', 'author')
+    search_fields = ('user__username', 'author__username')
     list_filter = ('updated_at', 'created_at')
