@@ -96,7 +96,7 @@ def recipe_image_upload_path(instance, filename: str) -> Path:
         filename (str): оригинальное имя файла
 
     Returns:
-        Путь вида `recipes/user_<user_id>/<recipe_id>/<uuid>.<ext>`
+        Путь вида `recipes/user_<user_id>/<uuid>.<ext>`
     """
     ext = get_safe_extension(filename)
     new_filename = generate_unique_filename(ext)
