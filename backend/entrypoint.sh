@@ -17,4 +17,4 @@ echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
 echo "Starting Gunicorn..."
-gunicorn config.wsgi:application --bind 0.0.0.0:${GUNICORN_PORT:-8000}
+gunicorn config.wsgi:application --bind 0.0.0.0:${GUNICORN_PORT:-8080}
