@@ -120,7 +120,7 @@ class CustomUser(AbstractUser):
     )
     avatar = models.ImageField(
         'аватар',
-        upload_to='avatars/',  # TODO: Сделать загрузку как c фото рецептами?
+        upload_to='avatars/',  # [ ]: Сделать загрузку как c фото рецептами?
         blank=True,
         null=True,
         help_text=CUSTOMUSER_AVATAR_HELP,
@@ -162,7 +162,6 @@ class CustomUser(AbstractUser):
         Приводит first_name и last_name к виду c заглавной первой буквой.
         Проверяет, что first_name и last_name не совпадают (без учёта регистра)
         """
-        # TODO: Добавить поддержку двойных имен и фамилий через regex
         self.first_name = capitalize_name(self.first_name)
         self.last_name = capitalize_name(self.last_name)
         if self.first_name.lower() == self.last_name.lower():

@@ -1,5 +1,3 @@
-# TODO: Настроить регистронезависимый поиск по названию (вхождение в начало, опционально — в произвольном месте)  # noqa: E501
-
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -130,7 +128,7 @@ class FavoriteAdmin(UserRecipeCollectionAdminMixin, admin.ModelAdmin):
     model_item = Favoriteitem
 
 
-# # TODO: Удалить из-за ненадобности?
+# # [ ]: Удалить из-за ненадобности?
 @admin.register(Subscribe)
 class SubscribeAdmin(ReadOnlyInLineMixin, admin.ModelAdmin):
     """Админ-панель для модели Subscribe."""

@@ -1,4 +1,4 @@
-# TODO: Сделать регистронезависымый поиск на кириллице
+# [ ]: Проверить поиск на PostgreSQL
 
 from django.contrib import admin
 

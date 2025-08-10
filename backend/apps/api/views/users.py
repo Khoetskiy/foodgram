@@ -57,7 +57,6 @@ class CustomUserViewSet(
             return [DenyAll()]
         return super().get_permissions()
 
-    # TODO: Вынести в RestrictedMethodsMixin? - Ограничение HTTP методов (запрет PUT/DELETE для пользователей)
     def update(self, request, *args, **kwargs):
         return Response(
             {'detail': 'Метод "PUT" не разрешен.'},

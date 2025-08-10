@@ -52,9 +52,9 @@ PAGE_SIZE_PAGINATION = 10
 MAX_PAGE_SIZE_PAGINATION = 50
 
 
-# TODO: Вынести в отдельный файл `core/constants/help_texts.py`?
+# [ ]: Вынести в отдельный файл `core/constants/help_texts.py`?
 
-# TODO: Сделать также константы для остальных приложений?
+# [ ]: Сделать также константы для остальных приложений?
 
 # --- Help texts для моделей приложения users ---
 CUSTOMUSER_USERNAME_HELP = (

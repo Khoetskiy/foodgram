@@ -67,10 +67,9 @@ class RecipeViewSet(
     - Генерация коротких ссылок
     """
 
-    # queryset = Recipe.objects.all()
     queryset = Recipe.objects.select_related('author').prefetch_related(
         'tags', 'recipe_ingredients__ingredient__measurement_unit'
-    )  # FIXME:
+    )
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
