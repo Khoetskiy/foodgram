@@ -121,7 +121,6 @@ class CustomUser(AbstractUser):
     )
     avatar = models.ImageField(
         'аватар',
-        # upload_to='avatars/',  # [ ]: Сделать загрузку как c фото рецептами?
         upload_to=get_upload_path,
         blank=True,
         null=True,
