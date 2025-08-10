@@ -47,7 +47,7 @@ services:
     image: khoetskiy/foodgram_nginx:latest
     container_name: foodgram-nginx
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - static:/usr/share/nginx/html
       - media:/usr/share/nginx/html/media
