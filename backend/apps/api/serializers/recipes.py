@@ -154,8 +154,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     Включает вложенные теги, автора, ингредиенты и вычисляемые поля
     избранного и корзины.
     """
-    # FIXME: подумать
-    # author = UserReadSerializer(many=False, read_only=True)
+
     author = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
     ingredients = RecipeIngredientReadSerializer(
