@@ -231,5 +231,5 @@ jobs:
           to: ${{ secrets.TELEGRAM_ID }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ${{ github.actor}}
+            **${{ github.actor}}**
             Деплой проекта "foodgram"успешно выполнен!
