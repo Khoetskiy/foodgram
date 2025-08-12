@@ -16,6 +16,23 @@ INTERNAL_IPS = [
     'localhost',
 ]
 
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'web',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
     *REST_FRAMEWORK.get('DEFAULT_RENDERER_CLASSES', []),
     'rest_framework.renderers.BrowsableAPIRenderer',

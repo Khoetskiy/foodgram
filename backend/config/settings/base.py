@@ -11,10 +11,6 @@ SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
 
 DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config(
-    'DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv()
-)
-
 ROOT_URLCONF = 'config.urls'
 
 WSGI_APPLICATION = 'config.wsgi.application'
