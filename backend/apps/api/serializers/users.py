@@ -68,9 +68,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
         extra_kwargs = {'password': {'write_only': True}}  # noqa: RUF012
 
-        def create(self, validate_data):
-            """Создаёт пользователя и хэширует пароль."""
-            return User.objects.create_user(**validate_data)
+    def create(self, validate_data):
+        """Создаёт пользователя и хэширует пароль."""
+        return User.objects.create_user(**validate_data)
 
 
 class UserAvatarSerializer(serializers.ModelSerializer):
