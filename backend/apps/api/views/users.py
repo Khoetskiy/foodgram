@@ -3,7 +3,7 @@ from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.api.permissions import DenyAll
@@ -55,6 +55,8 @@ class CustomUserViewSet(
         """Настройка разрешений для отключенных действий."""
         if self.action in DISABLED_ACTIONS_DJOSER:
             return [DenyAll()]
+        if self.action == 'create':
+            return [AllowAny()]
         return super().get_permissions()
 
     def update(self, request, *args, **kwargs):
