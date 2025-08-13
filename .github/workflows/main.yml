@@ -166,4 +166,4 @@ jobs:
             🌿 Ветка: ${{ github.ref_name }}
             📝 Коммит: ${{ github.event.head_commit.message }}
             ✅ Все сервисы успешно обновлены и запущены!
-            format: html
+          format: html

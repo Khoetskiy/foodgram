@@ -1,5 +1,6 @@
 # ruff: noqa
-from decouple import Csv
+# flake8: noqa
+from decouple import Csv, config
 
 from .base import *
 
