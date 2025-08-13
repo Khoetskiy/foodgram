@@ -57,6 +57,3 @@ secrets/
 
 # scripts
 import_data.sh
-
-# DB
-db.sqlite3

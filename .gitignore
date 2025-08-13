@@ -141,6 +141,8 @@ dmypy.json
 static/
 media/
 
+.ruff_cache
+
 serializers(old).py
 serializers(beta)/
 views(old).py
