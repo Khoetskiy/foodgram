@@ -3,7 +3,7 @@
 set -e
 set -u
 
-CSV_DIR="../data/csv"
+CSV_DIR="data/development"
 MEDIA_ROOT="media"
 IMAGE_SRC="$CSV_DIR/default.png"
 IMAGE_DEST="$MEDIA_ROOT/recipes/images/default.png"
