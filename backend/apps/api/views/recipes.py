@@ -4,7 +4,7 @@ from rest_framework import filters, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.api.filters import RecipeFilter
+from apps.api.filters import IngredientFilter, RecipeFilter
 from apps.api.pagination import CustomPageNumberPagination
 from apps.api.permissions import IsAuthorOrReadOnly
 from apps.api.serializers import (
@@ -45,8 +45,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
     pagination_class = None
     permission_classes = (AllowAny,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    search_fields = ('^name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(
