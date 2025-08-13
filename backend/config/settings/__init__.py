@@ -1,3 +1,5 @@
+# ruff: noqa
+# flake8: noqa
 import os
 
 from decouple import config
