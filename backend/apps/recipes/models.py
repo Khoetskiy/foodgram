@@ -7,31 +7,34 @@ from django.core.validators import (
     MinLengthValidator,
     MinValueValidator,
 )
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 
 from apps.core.constants import (
     ALLOWED_EXTENSIONS,
     INGREDIENT_NAME_MAX_LENGTH,
     INGREDIENT_NAME_MIN_LENGTH,
+    MAX_AMOUNT_INGREDIENTS,
     MAX_COOK_TIME,
     MEASUREMENTUNIT_MAX_NAME_LENGTH,
     MIN_AMOUNT_INGREDIENTS,
     MIN_COOK_TIME,
     RECIPE_NAME_MAX_LENGTH,
+    RECIPE_SHORT_CODE_MAX_LENGTH,
     TAG_NAME_MAX_LENGTH,
     TAG_SLUG_MAX_LENGTH,
 )
 from apps.core.exceptions import SlugGenerationError
 from apps.core.models import TimeStampModel
+from apps.core.services import get_upload_path
 from apps.core.utils import truncate_text
 from apps.core.validators import (
     validate_file_size,
     validate_safe_filename,
 )
 from apps.recipes.services import (
+    generate_unique_short_code,
     generate_unique_slug,
-    recipe_image_upload_path,
 )
 
 User = get_user_model()
@@ -88,6 +91,9 @@ class Ingredient(TimeStampModel):
         'название',
         max_length=INGREDIENT_NAME_MAX_LENGTH,
         unique=True,
+        help_text=(
+            f'Название ингредиента (до {INGREDIENT_NAME_MAX_LENGTH} символов)'
+        ),
         validators=[
             MinLengthValidator(
                 INGREDIENT_NAME_MIN_LENGTH,
@@ -210,7 +216,7 @@ class Recipe(TimeStampModel):
     author = models.ForeignKey(
         User,
         verbose_name='автор',
-        on_delete=models.PROTECT,  # FIXME: поменять поведение
+        on_delete=models.PROTECT,
         help_text='Автор рецепта',
     )
     text = models.TextField('описание', help_text='Описание рецепта')
@@ -226,7 +232,7 @@ class Recipe(TimeStampModel):
     )
     image = models.ImageField(
         'фото',
-        upload_to=recipe_image_upload_path,
+        upload_to=get_upload_path,
         help_text='Фотография готового блюда',
         validators=[
             FileExtensionValidator(
@@ -236,8 +242,7 @@ class Recipe(TimeStampModel):
             ),
             validate_safe_filename,
             validate_file_size,
-            # FIXME: Пофиксить кастомную валидацию
-        ],  # TODO: Картинка должна быть закодированная в Base64 на API
+        ],
     )
     cooking_time = models.PositiveIntegerField(
         'время приготовления',
@@ -250,6 +255,14 @@ class Recipe(TimeStampModel):
                 MAX_COOK_TIME, f'Максимальное время: {MAX_COOK_TIME} мин'
             ),
         ],
+    )
+    short_code = models.CharField(
+        'уникальный код',
+        max_length=RECIPE_SHORT_CODE_MAX_LENGTH,
+        unique=True,
+        editable=False,
+        blank=True,
+        help_text='Уникальная последовательность',
     )
 
     class Meta(TimeStampModel.Meta):
@@ -272,6 +285,12 @@ class Recipe(TimeStampModel):
 
     def __str__(self) -> str:
         return truncate_text(self.name)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        if not self.short_code:
+            self.short_code = generate_unique_short_code(Recipe, 'short_code')
+        super().save(*args, **kwargs)
 
 
 class RecipeIngredient(TimeStampModel):
@@ -306,6 +325,10 @@ class RecipeIngredient(TimeStampModel):
                 MIN_AMOUNT_INGREDIENTS,
                 f'Количество должно быть больше {MIN_AMOUNT_INGREDIENTS}.',
             ),
+            MaxValueValidator(
+                MAX_AMOUNT_INGREDIENTS,
+                f'Максимальное количество: {MAX_AMOUNT_INGREDIENTS}',
+            ),
         ],
     )
 
@@ -313,6 +336,12 @@ class RecipeIngredient(TimeStampModel):
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
         ordering = ('amount',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_recipe_ingredient',
+            )
+        ]
 
     def __str__(self) -> str:
         return self.recipe.name

@@ -1,6 +1,13 @@
+import logging
+
+from pathlib import Path
+
 from django.urls import reverse
 
 from apps.core.utils import render_html_list_block
+from apps.core.utils.files import generate_unique_filename, get_safe_extension
+
+logger = logging.getLogger(__name__)
 
 
 def get_objects(
@@ -13,7 +20,7 @@ def get_objects(
     """
     Возвращает HTML-блок со списком объектов с админ-ссылками.
 
-    Для каждого объекта создаётся ссылка на страницу его редактирования в админке.
+    Для каждого объекта создаётся ссылка на страницу редактирования в админке.
     Если объектов нет, возвращается символ '—'.
 
     Args:
@@ -39,3 +46,29 @@ def get_objects(
         for item in items
     ]
     return render_html_list_block(args_list, title)
+
+
+def get_upload_path(instance, filename: str) -> Path:
+    """
+    Универсальная функция для путей загрузки файлов.
+
+    Args:
+        instance: объект модели
+        filename (str): оригинальное имя файла
+
+    Returns: Path
+    """
+    ext = get_safe_extension(filename)
+    new_filename = generate_unique_filename(ext)
+
+    if hasattr(instance, 'author'):
+        user_id = instance.author.id
+        folder = 'recipes'
+    elif hasattr(instance, 'username'):
+        user_id = instance.id
+        folder = 'avatars'
+    else:
+        msg = f'Неподдерживаемый тип модели: {type(instance)}'
+        logger.warning(msg)
+        raise ValueError(msg)
+    return Path(folder) / f'user_{user_id}' / new_filename

@@ -2,6 +2,7 @@
 RECIPE_NAME_MAX_LENGTH = 256
 MIN_COOK_TIME = 1  # в минутах
 MAX_COOK_TIME = 60 * 12
+RECIPE_SHORT_CODE_MAX_LENGTH = 8
 
 # --- Ограничения для полей модели Tag ---
 TAG_NAME_MAX_LENGTH = TAG_SLUG_MAX_LENGTH = 32
@@ -10,6 +11,7 @@ TAG_NAME_MAX_LENGTH = TAG_SLUG_MAX_LENGTH = 32
 INGREDIENT_NAME_MAX_LENGTH = 128
 INGREDIENT_NAME_MIN_LENGTH = 3
 MIN_AMOUNT_INGREDIENTS = 1
+MAX_AMOUNT_INGREDIENTS = 1000
 
 # --- Ограничения для полей модели MeasurementUnit ---
 MEASUREMENTUNIT_MAX_NAME_LENGTH = 64
@@ -30,15 +32,24 @@ ALLOWED_EXTENSIONS = ('jpg', 'jpeg', 'png')
 DEFAULT_EXT = 'jpg'
 MAX_SIZE_FILE: int = 5  # MB
 
-# --- Для core/utils ---
-MAX_ATTEMPTS = 1000  # Для генерации slug ---
+# --- misc ---
+MAX_ATTEMPTS = 1000
 ARCHIVE_ROOT = 'archive'
 UUID_FILENAME_LENGTH = 10
+SHORT_LINK_PREFIX = 's'
 
-
-# TODO: Вынести в отдельный файл `core/constants/help_texts.py`?
-
-# TODO: Сделать также константы для остальных приложений?
+# --- API ---
+DISABLED_ACTIONS_DJOSER = [
+    'activation',
+    'resend_activation',
+    'reset_password',
+    'reset_password_confirm',
+    'set_username',
+    'reset_username',
+    'reset_username_confirm',
+]
+PAGE_SIZE_PAGINATION = 10
+MAX_PAGE_SIZE_PAGINATION = 50
 
 # --- Help texts для моделей приложения users ---
 CUSTOMUSER_USERNAME_HELP = (

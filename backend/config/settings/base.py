@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from decouple import Csv, config
+from decouple import config
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -10,10 +10,6 @@ AUTH_USER_MODEL = 'users.CustomUser'
 SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
 
 DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
-
-ALLOWED_HOSTS = config(
-    'DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv()
-)
 
 ROOT_URLCONF = 'config.urls'
 
@@ -28,14 +24,22 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    'django_filters',
+]
+
 LOCAL_APPS = [
     'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
     'apps.recipes.apps.RecipesConfig',
     'apps.cart.apps.CartConfig',
+    'apps.api.apps.ApiConfig',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
@@ -46,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.ProjectExceptionMiddleware',
 ]
 
 
@@ -66,9 +71,17 @@ TEMPLATES = [
 ]
 
 
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+
+
 USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
+
 if USE_SQLITE:
+    STATIC_ROOT = BASE_DIR / 'static'
+    MEDIA_ROOT = BASE_DIR / 'media'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -76,16 +89,30 @@ if USE_SQLITE:
         }
     }
 else:
+    STATIC_ROOT = '/app/collectstatic/static'
+    MEDIA_ROOT = '/app/media'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='django_db'),
-            'USER': config('DB_USER', default='django_user'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
+            'NAME': config('POSTGRES_DB', default='django_db'),
+            'USER': config('POSTGRES_USER', default='django_user'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='db'),
             'PORT': config('DB_PORT', default='5432'),
         }
     }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'foodgram-cache',
+        'TIMEOUT': 300,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        },
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -105,19 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LANGUAGE_CODE = 'ru-Ru'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
-
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend' / 'static',
-]
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -182,73 +199,48 @@ LOGGING = {
 }
 
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.TokenAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',
-#     ],
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.IsAuthenticated',
-#     ],
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 20,
-#     'DEFAULT_RENDERER_CLASSES': [
-#         'rest_framework.renderers.JSONRenderer',
-#     ],
-#     'DEFAULT_PARSER_CLASSES': [
-#         'rest_framework.parsers.JSONParser',
-#         'rest_framework.parsers.FormParser',
-#         'rest_framework.parsers.MultiPartParser',
-#     ],
-#     'DEFAULT_THROTTLE_CLASSES': [
-#         'rest_framework.throttling.AnonRateThrottle',
-#         'rest_framework.throttling.UserRateThrottle',
-#     ],
-#     'DEFAULT_THROTTLE_RATES': {
-#         'anon': '100/hour',
-#         'user': '1000/hour',
-#     },
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1000/day',
+        'user': '5000/day',
+    },
+}
 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'HIDE_USERS': False,
+    'LOGIN_AFTER_REGISTRATION': True,
+    'TOKEN_LENGTH': 40,
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user_create': ['rest_framework.permissions.AllowAny'],
+        'set_password': ['rest_framework.permissions.IsAuthenticated'],
+        'token_create': ['rest_framework.permissions.AllowAny'],
+        'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
+    },
+}
 
-# # Настройки CORS
-# CORS_ALLOWED_ORIGINS = [
-#     origin.strip()
-#     for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-#     if origin.strip()
-# ]
-
-# CORS_ALLOW_CREDENTIALS = True
-
-# # Настройки CSRF
-# CSRF_TRUSTED_ORIGINS = [
-#     origin.strip()
-#     for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
-#     if origin.strip()
-# ]
-
-# # Настройки безопасности
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# X_FRAME_OPTIONS = 'DENY'
-
-# # Настройки сессий
-# SESSION_COOKIE_SECURE = not DEBUG
-# SESSION_COOKIE_HTTPONLY = True
-# SESSION_COOKIE_AGE = 86400  # 24 часа
-
-# # Настройки CSRF куки
-# CSRF_COOKIE_SECURE = not DEBUG
-# CSRF_COOKIE_HTTPONLY = True
-
-
-# # Настройки электронной почты
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-# DEFAULT_FROM_EMAIL = os.environ.get(
-#     'DEFAULT_FROM_EMAIL', 'noreply@example.com'
-# )
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -1,47 +1,10 @@
 [tool.ruff]
+src = ["backend"]
+
+target-version = "py312"
+
 line-length = 79
 
-# Настройки линтера
-[tool.ruff.lint]
-select = [
-    "E", "W", "F", "I", "N", "UP", "YTT", "S", "BLE", "FBT",
-    "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC",
-    "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET",
-    "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD",
-    "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "PERF",
-    "FURB", "LOG", "RUF"
-]
-ignore = [
-    "ANN401", "S101", "D", "FBT001", "FBT002", "TD002", "TD003",
-    "FIX002", "COM812", "ISC001", "RUF001", "BLE001", "TD001", "FIX001", "FIX003", "RUF012"
-]
-unfixable = ["F401", "F841"]
-
-[tool.ruff.lint.isort]
-known-local-folder = ["apps", "config"]
-lines-between-types = 1
-
-[tool.ruff.lint.flake8-quotes]
-inline-quotes = "single"
-multiline-quotes = "double"
-docstring-quotes = "double"
-avoid-escape = true
-
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
-
-[tool.ruff.lint.flake8-type-checking]
-strict = false
-
-# Настройки форматтера
-[tool.ruff.format]
-quote-style = "single"
-indent-style = "space"
-line-ending = "lf"
-docstring-code-format = true
-skip-magic-trailing-comma = false
-
-# Файлы и папки для исключения из проверки
 exclude = [
     ".bzr",
     ".direnv",
@@ -70,5 +33,56 @@ exclude = [
     "site-packages",
     "venv",
     "migrations",
-    "*/migrations/*"
+    "*/migrations/*",
+    "manage.py"
 ]
+
+# Настройки линтера
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "YTT", "S", "BLE", "FBT",
+    "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC",
+    "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET",
+    "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD",
+    "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "PERF",
+    "FURB", "LOG", "RUF"
+]
+
+ignore = [
+    "ANN401", "S101", "D", "FBT001", "FBT002", "TD002", "TD003",
+    "FIX002", "COM812", "ISC001", "RUF001", "BLE001", "TD001", "FIX001",
+    "FIX003", "RUF012", "ERA001", "RUF002", "PGH004", "ARG001", "ARG002",
+    "PLC0415", "RUF100", "PLR0913", "PTH123", "S105", "TID252"
+]
+unfixable = ["F401", "F841"]
+
+[tool.ruff.lint.isort]
+known-local-folder = ["apps", "config"]
+lines-between-types = 1
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+multiline-quotes = "double"
+docstring-quotes = "double"
+avoid-escape = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-type-checking]
+strict = false
+
+# Настройки форматтера
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
+"backend/config/settings/__init__.py" = ["F403", "F405", "T201", "TID252"]
+"backend/config/settings/base.py" = ["F403", "F405", "E501", "T201", "TID252"]
+"backend/config/settings/development.py" = ["F403", "F405", "T201", "TID252"]
+"backend/config/settings/production.py" = ["F403", "F405", "PGH004", "T201", "TID252"]
+"backend/apps/recipes/apps.py" = ["F401"]

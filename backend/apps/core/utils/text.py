@@ -1,8 +1,15 @@
+from __future__ import annotations
+
 import re
+import uuid
 
 from deep_translator import GoogleTranslator
 
-from apps.core.constants import TEXT_TRUNCATE_LENGTH, TEXT_TRUNCATE_SUFFIX
+from apps.core.constants import (
+    RECIPE_SHORT_CODE_MAX_LENGTH,
+    TEXT_TRUNCATE_LENGTH,
+    TEXT_TRUNCATE_SUFFIX,
+)
 from apps.core.exceptions import TranslationError
 
 
@@ -53,7 +60,7 @@ def translate_text(text: str, target_language: str = 'en') -> str:
     Returns:
         str: Переведённый текст.
     """
-    # FIXME: Избавиться от внешней библиотеки GoogleTranslator
+
     try:
         return GoogleTranslator(
             source='auto', target=target_language
@@ -92,3 +99,19 @@ def capitalize_name(name: str | None) -> str:
     if not isinstance(name, str):
         return ''
     return name.strip().capitalize()
+
+
+def generate_short_code(length: int = RECIPE_SHORT_CODE_MAX_LENGTH) -> str:
+    """
+    Генерирует короткий код на основе UUID4.
+
+    Args:
+        length (int): Максимальная длина.
+
+    Returns:
+        str: Код `length` длины c заглавными буквами.
+    """
+    if length <= 0:
+        msg = 'Длина должна быть больше 0.'
+        raise ValueError(msg)
+    return str(uuid.uuid4()).replace('-', '')[:length].upper()

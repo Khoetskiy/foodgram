@@ -32,6 +32,7 @@ from apps.core.constants import (
     USERNAME_VALIDATION_REGEX,
 )
 from apps.core.models import TimeStampModel
+from apps.core.services import get_upload_path
 from apps.core.utils import capitalize_name
 from apps.core.validators import validate_file_size, validate_safe_filename
 
@@ -52,7 +53,7 @@ class CustomUser(AbstractUser):
     """
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     username = models.CharField(
         'имя пользователя',
@@ -120,8 +121,9 @@ class CustomUser(AbstractUser):
     )
     avatar = models.ImageField(
         'аватар',
-        upload_to='avatars/',
+        upload_to=get_upload_path,
         blank=True,
+        null=True,
         help_text=CUSTOMUSER_AVATAR_HELP,
         validators=[
             FileExtensionValidator(
@@ -161,13 +163,11 @@ class CustomUser(AbstractUser):
         Приводит first_name и last_name к виду c заглавной первой буквой.
         Проверяет, что first_name и last_name не совпадают (без учёта регистра)
         """
-        # TODO: Добавить поддержку двойных имен и фамилий через regex
         self.first_name = capitalize_name(self.first_name)
         self.last_name = capitalize_name(self.last_name)
         if self.first_name.lower() == self.last_name.lower():
-            raise ValidationError(
-                'Имя и фамилия не должны совпадать.', code='name_match'
-            )
+            msg = 'Имя и фамилия не должны совпадать.'
+            raise ValidationError(msg, code='name_match')
         super().clean()
 
     def save(self, *args, **kwargs):
@@ -280,9 +280,8 @@ class Subscribe(TimeStampModel):
 
     def clean(self):
         if self.user == self.author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя.', code='prohibit_yourself'
-            )
+            msg = 'Нельзя подписаться на самого себя.'
+            raise ValidationError(msg, code='prohibit_yourself')
         super().clean()
 
     def __str__(self) -> str:

@@ -81,26 +81,26 @@ class Command(BaseCommand):
                 obj = modelclass(**filtered_data)
                 bulk_objects.append(obj)
             except ValueError:
-                self.stderr.write(self.style.WARNING(
-                    f'Некорректные данные в строке: {row}'
-                ))
+                self.stderr.write(
+                    self.style.WARNING(f'Некорректные данные в строке: {row}')
+                )
 
         try:
             if bulk_objects:
                 modelclass.objects.bulk_create(bulk_objects)
-                self.stdout.write(self.style.SUCCESS(
-                    f'Успешно загружено {len(bulk_objects)} '
-                    f'объектов(а) для модели "{modelclass.__name__}".'
-                ))
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'Успешно загружено {len(bulk_objects)} '
+                        f'объектов(а) для модели "{modelclass.__name__}".'
+                    )
+                )
             else:
-                self.stdout.write(self.style.NOTICE(
-                    'Не было загружено ни одного объекта.'
-                ))
+                self.stdout.write(
+                    self.style.NOTICE('Не было загружено ни одного объекта.')
+                )
         except IntegrityError as e:
             self.stderr.write(self.style.ERROR(f'Ошибка IntegrityError: {e}.'))
             self.stderr.write(self.style.ERROR(f'Строка: {row}.'))
-
-
 
     def convert_data_types(self, row: dict) -> dict:
         """Преобразует данные из CSV в нужные типы."""
