@@ -232,5 +232,5 @@ class RecipeAdmin(admin.ModelAdmin):
         """
         qs = super().get_queryset(request)
         return qs.prefetch_related('ingredients').annotate(
-            fav_count=Count('favorited_by')
+            fav_count=Count('favorites')
         )
