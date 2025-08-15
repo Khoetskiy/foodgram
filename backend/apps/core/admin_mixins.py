@@ -1,7 +1,5 @@
 from django.contrib import admin
-from django.db.models import Prefetch
 
-from apps.core.services import get_objects
 from apps.users.models import Subscribe
 
 
@@ -44,7 +42,7 @@ class ReadOnlyInLineMixin(NoAddMixin, NoChangeMixin, NoDeleteMixin):
 
 
 class BaseSubscribeInlineMixin:
-    """Базовый миксин для инлайнов подписок."""
+    """Базовый класс для Inline подписок."""
 
     model = Subscribe
     extra = 0
@@ -63,48 +61,30 @@ class BaseSubscribeInlineMixin:
         return qs.select_related('user', 'author')
 
 
-class UserRecipeCollectionAdminMixin:
+class UserRecipeCollectionAdminMixin(admin.ModelAdmin):
     """
-    Миксин для админ-панелей коллекций пользователей (избранное, корзина).
+    Миксин для админ-панелей коллекций пользователей избранного и корзины.
     """
 
-    list_display = ('user', 'get_recipes', 'updated_at', 'created_at')
-    list_filter = ('updated_at', 'created_at')
-    search_fields = ('user__username', 'items__recipe__name')
-    readonly_fields = ('updated_at', 'created_at')
-    fieldsets = (
-        (None, {'fields': ('user',)}),
-        (
-            'Системная информация',
-            {
-                'fields': ('updated_at', 'created_at'),
-                'classes': ('extrapretty',),
-            },
-        ),
-    )
+    list_display = ('user', 'recipe', 'created_at')
+    search_fields = ('user__username', 'recipe__name')
+    list_filter = ('user', 'created_at')
+    date_hierarchy = 'created_at'
 
-    model_item = None
 
-    @admin.display(description='Рецепты')
-    def get_recipes(self, obj):
-        """Возвращает связанные рецепты, в виде списка HTML-блока."""
-        return get_objects(
-            items=obj.items.all(),
-            admin_url='admin:recipes_recipe_change',
-            item_args=lambda item: [item.recipe.id],
-            display_value=lambda item: item.recipe,
-            title='Показать рецепты',
-        )
+class BaseRecipeCollectionInLineMixin(admin.TabularInline):
+    """
+    Базовый класс для Inline коллекций пользователей избранного и корзины.
+    """
+
+    model = None
+    extra = 0
+    classes = ('collapse',)
+    fields = ('recipe', 'created_at')
+    readonly_fields = ('created_at',)
+    verbose_name = 'рецепт'
+    verbose_name_plural = ''
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.select_related('user')
-
-        if self.model_item:
-            qs = qs.prefetch_related(
-                Prefetch(
-                    'items',
-                    queryset=self.model_item.objects.select_related('recipe'),
-                )
-            )
-        return qs
+        return qs.select_related('user', 'recipe')

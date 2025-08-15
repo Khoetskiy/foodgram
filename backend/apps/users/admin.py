@@ -4,12 +4,12 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 
 from apps.core.admin_mixins import (
+    BaseRecipeCollectionInLineMixin,
     BaseSubscribeInlineMixin,
     NoChangeMixin,
-    ReadOnlyInLineMixin,
     UserRecipeCollectionAdminMixin,
 )
-from apps.users.models import Favorite, Favoriteitem, Subscribe
+from apps.users.models import Cart, Favorite, Subscribe
 
 User = get_user_model()
 
@@ -20,7 +20,7 @@ class SubscriptionsInline(
     BaseSubscribeInlineMixin, NoChangeMixin, admin.TabularInline
 ):
     """
-    Инлайн для отображения подписок пользователя (на кого он подписан).
+    Inline для отображения подписок пользователя (на кого он подписан).
     """
 
     fk_name = 'user'
@@ -33,7 +33,7 @@ class SubscribersInline(
     BaseSubscribeInlineMixin, NoChangeMixin, admin.TabularInline
 ):
     """
-    Инлайн для отображения подписчиков пользователя (кто на него подписан).
+    Inline для отображения подписчиков пользователя (кто на него подписан).
     """
 
     fk_name = 'author'
@@ -42,20 +42,26 @@ class SubscribersInline(
     verbose_name_plural = 'подписчики (кто подписан)'
 
 
-class FavoriteItemInLine(NoChangeMixin, admin.TabularInline):
-    """Инлайн для отображения элементов избранного в админ-панели Favorite"""
+class CartInline(NoChangeMixin, BaseRecipeCollectionInLineMixin):
+    """
+    Inline для управления корзиной пользователя.
 
-    model = Favoriteitem
-    extra = 0
-    fields = ('recipe', 'created_at')
-    readonly_fields = ('updated_at', 'created_at')
-    autocomplete_fields = ('recipe',)
-    verbose_name = 'рецепт'
-    verbose_name_plural = 'избранные рецепты'
+    Позволяет добавлять/удалять рецепты прямо из админки пользователя.
+    """
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs.select_related('favorite', 'recipe', 'favorite__user')
+    model = Cart
+    verbose_name_plural = 'корзина покупок'
+
+
+class FavoriteInline(NoChangeMixin, BaseRecipeCollectionInLineMixin):
+    """
+    Inline для управления избранным пользователя.
+
+    Позволяет добавлять/удалять рецепты прямо из админки пользователя.
+    """
+
+    model = Favorite
+    verbose_name_plural = 'избранное'
 
 
 @admin.register(User)
@@ -68,7 +74,12 @@ class UserAdmin(BaseUserAdmin):
         - Инлайн-класс SubscribersInline для подписчиков пользователя.
     """
 
-    inlines = (SubscriptionsInline, SubscribersInline)
+    inlines = (
+        SubscriptionsInline,
+        SubscribersInline,
+        CartInline,
+        FavoriteInline,
+    )
     list_display = ('username', 'email', 'first_name', 'last_name', 'avatar')
     search_fields = ('username', 'email', 'first_name', 'last_name')
     empty_value_display = '-'
@@ -114,25 +125,21 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
-@admin.register(Favorite)
-class FavoriteAdmin(UserRecipeCollectionAdminMixin, admin.ModelAdmin):
-    """
-    Админ-панель для модели Favorite.
-    Отображает список избранных рецептов пользователей.
-
-    Включает:
-        - Инлайн-класс FavoriteItemInLine для управления избранными рецептами.
-    """
-
-    inlines = (FavoriteItemInLine,)
-    model_item = Favoriteitem
-
-
 @admin.register(Subscribe)
-class SubscribeAdmin(ReadOnlyInLineMixin, admin.ModelAdmin):
+class SubscribeAdmin(NoChangeMixin, admin.ModelAdmin):
     """Админ-панель для модели Subscribe."""
 
-    list_display = ('user', 'author')
-    readonly_fields = ('user', 'author')
+    list_display = ('user', 'author', 'created_at')
     search_fields = ('user__username', 'author__username')
-    list_filter = ('updated_at', 'created_at')
+    list_filter = ('user', 'author')
+    date_hierarchy = 'created_at'
+
+
+@admin.register(Cart)
+class CartAdmin(NoChangeMixin, UserRecipeCollectionAdminMixin):
+    """Админ-панель для корзины пользователя."""
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(NoChangeMixin, UserRecipeCollectionAdminMixin):
+    """Админ-панель для избранного пользователя."""

@@ -17,9 +17,9 @@ from apps.core.constants import (
     CUSTOMUSER_LASTNAME_HELP,
     CUSTOMUSER_USERNAME_HELP,
     EMAIL_LENGTH,
+    FAVORITE_RECIPE_HELP,
     FAVORITE_USER_HELP,
-    FAVORITEITEM_FAVORITE_HELP,
-    FAVORITEITEM_RECIPE_HELP,
+    FAVORITEITEM_FAVORITE_HELP,  # FIXME: 
     FIRST_NAME_LENGTH,
     FIRST_NAME_MIN_LENGTH,
     LAST_NAME_LENGTH,
@@ -33,7 +33,7 @@ from apps.core.constants import (
 )
 from apps.core.models import TimeStampModel
 from apps.core.services import get_upload_path
-from apps.core.utils import capitalize_name
+from apps.core.utils import capitalize_name, truncate_text
 from apps.core.validators import validate_file_size, validate_safe_filename
 
 
@@ -175,72 +175,6 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
 
 
-class Favorite(TimeStampModel):
-    """
-    Модель списка избранного пользователя.
-    У каждого пользователя может быть только один список избранного.
-
-
-    Attributes:
-        user (CustomUser): Пользователь, которому принадлежит список избранного
-    """
-
-    user = models.OneToOneField(
-        CustomUser,
-        verbose_name='пользователь',
-        on_delete=models.CASCADE,
-        help_text=FAVORITE_USER_HELP,
-        related_name='favorite',
-    )
-
-    class Meta(TimeStampModel.Meta):
-        verbose_name = 'избранное'
-        verbose_name_plural = 'избранные'
-        indexes = [models.Index(fields=['user'], name='favorite_user_idx')]
-
-    def __str__(self) -> str:
-        return f'Избранное пользователя: {str(self.user.username).upper()}'
-
-
-class Favoriteitem(TimeStampModel):
-    """
-    Элемент избранного: связь между избранным и рецептом.
-
-    Один FavoriteItem связывает один Favorite c одним Recipe.
-
-    Attributes:
-        favorite (Favorite): Избранное, к которому относится этот элемент.
-        recipe (Recipe): Рецепт, добавленный в избранное.
-    """
-
-    favorite = models.ForeignKey(
-        Favorite,
-        verbose_name='избранное',
-        on_delete=models.CASCADE,
-        help_text=FAVORITEITEM_FAVORITE_HELP,
-        related_name='items',
-    )
-    recipe = models.ForeignKey(
-        'recipes.Recipe',
-        verbose_name='рецепт',
-        on_delete=models.CASCADE,
-        help_text=FAVORITEITEM_RECIPE_HELP,
-        related_name='favorited_by',
-    )
-
-    class Meta(TimeStampModel.Meta):
-        verbose_name = 'элемент избранного'
-        verbose_name_plural = 'элементы избранного'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['favorite', 'recipe'], name='unique_favorite_recipe'
-            )
-        ]
-
-    def __str__(self) -> str:
-        return f'{self.recipe} в избранном {self.favorite.user.username}'
-
-
 class Subscribe(TimeStampModel):
     """
     Модель подписок между пользователями.
@@ -286,3 +220,65 @@ class Subscribe(TimeStampModel):
 
     def __str__(self) -> str:
         return f'{self.user} подписан на {self.author}'
+
+
+class UserRecipeRelation(TimeStampModel):
+    """
+    Базовая модель для связи пользователя и рецепта.
+
+    Attributes:
+        user (User): Текущий пользователь.
+        recipe (Recipe): Связанный рецепт.
+    """
+
+    user = models.ForeignKey(
+        CustomUser,
+        verbose_name='пользователь',
+        on_delete=models.CASCADE,
+        help_text='Пользователь, связанный с рецептом.',
+    )
+    recipe = models.ForeignKey(
+        'recipes.Recipe',
+        verbose_name='рецепт',
+        on_delete=models.CASCADE,
+        help_text='Рецепт, связанный с пользователем.',
+    )
+
+    class Meta(TimeStampModel.Meta):
+        abstract = True
+        ordering = ('-created_at',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='%(class)s_unique_user_recipe',
+            )
+        ]
+
+    def __str__(self) -> str:
+        return truncate_text(f'{self.user.username} → {self.recipe.name}')
+
+
+class Cart(UserRecipeRelation):
+    """Модель корзины покупок пользователя."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = 'корзина'
+        verbose_name_plural = 'корзины'
+        # verbose_name = 'рецепт в корзине'
+        # verbose_name_plural = 'рецепты в корзине'
+        default_related_name = 'carts'
+
+    def __str__(self) -> str:
+        return f'{self.recipe} в корзине {self.user.username}'  # FIXME:
+
+
+class Favorite(UserRecipeRelation):
+    """Модель для избранных рецептов пользователя."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = 'избранное'
+        verbose_name_plural = 'избранные'
+        default_related_name = 'favorites'
+
+    def __str__(self) -> str:
+        return f'{self.recipe} в избранном {self.user.username}'  # FIXME:
