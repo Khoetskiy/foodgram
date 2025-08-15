@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.db import IntegrityError
 
-from apps.cart.models import Cart, CartItem
 from apps.recipes.models import (
     Ingredient,
     MeasurementUnit,
@@ -12,7 +11,7 @@ from apps.recipes.models import (
     RecipeIngredient,
     Tag,
 )
-from apps.users.models import Favorite, Favoriteitem, Subscribe
+from apps.users.models import Cart, Favorite, Subscribe
 
 User = get_user_model()
 
@@ -25,9 +24,7 @@ MODEL_CLASS_MAP = {
     'recipeingredient': RecipeIngredient,
     'recipetag': Recipe.tags.through,
     'cart': Cart,
-    'cartitem': CartItem,
     'favorite': Favorite,
-    'favoriteitem': Favoriteitem,
     'subscribe': Subscribe,
 }
 
