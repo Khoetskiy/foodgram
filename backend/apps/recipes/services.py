@@ -233,54 +233,49 @@ def get_txt_in_response(
 
 
 def manage_user_relation_object(
-    model,
-    relation_filter: dict,
-    related_obj,
-    related_field_name: str,
-    serializer_class,
-    serializer_context: dict,
-    already_exists_message: str = 'Объект уже добавлен',
-    not_found_message: str = 'Объект не найден',
+    relation_model,
+    user_id: int,
+    target_field: str,
+    target_object_id: int,
+    target_object,
+    create_serializer,
+    response_serializer,
+    context: dict,
+    not_found_error: str = 'Объект не найден',
 ):
     """
     Универсальная функция для управления связями пользователя c объектами.
 
     Args:
-        model (Model): модель, связующая user и объект.
-        relation_filter (dict): параметры фильтрации.
-        related_obj (Model): объект, c которым создаётся или удаляется связь.
-        related_field_name (str): имя поля в модели.
-        serializer_class: сериализатор, который возвращается при POST-запросе.
-        serializer_context (dict): контекст сериализатора.
-        already_exists_message (str): сообщение, если объект уже добавлен.
-        not_found_message (str): сообщение, если объект не найден.
+        relation_model (Model): Модель, связующая пользователя и объект.
+        user_id (int): ID пользователя.
+        target_field (str): Имя поля для целевого объекта.
+        target_object_id (int): ID целевого объекта.
+        target_object (Model): Целевой объект.
+        create_serializer (Serializer): Сериализатор для создания.
+        response_serializer (Serializer): Сериализатор для ответа.
+        context (dict): Контекст для сериализаторов.
+        not_found_error (str): Сообщение, если объект не найден.
 
     Returns:
         handler: функция-обработчик запроса.
     """
 
     def handler(request):
-        filter_kwargs = {**relation_filter, related_field_name: related_obj}
-
+        data = {'user': user_id, target_field: target_object_id}
         if request.method == 'POST':
-            if model.objects.filter(**filter_kwargs).exists():
-                return Response(
-                    {'errors': already_exists_message},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            model.objects.create(**filter_kwargs)
-            serializer = serializer_class(
-                related_obj, context=serializer_context
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = create_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            response_data = response_serializer(target_object, context=context)
+            return Response(response_data.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
-            deleted, _ = model.objects.filter(**filter_kwargs).delete()
-            if deleted:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        deleted, _ = relation_model.objects.filter(**data).delete()
+        if deleted:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(
-            {'errors': not_found_message},
+            {'errors': not_found_error},
             status=status.HTTP_400_BAD_REQUEST,
         )
 

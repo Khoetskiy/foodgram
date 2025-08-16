@@ -138,3 +138,17 @@ class SubscriptionUserSerializer(UserReadSerializer):
         return RecipeShortSerializer(
             recipes, many=True, context=self.context
         ).data
+
+
+class SubscribeCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscribe
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        """Дополнительная валидация - нельзя подписаться на себя."""
+        if data['user'] == data['author']:
+            raise serializers.ValidationError(
+                {'detail': 'Нельзя подписаться на самого себя'}
+            )
+        return super().validate(data)

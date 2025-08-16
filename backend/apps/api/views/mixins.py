@@ -8,18 +8,20 @@ from rest_framework.response import Response
 
 from apps.api.pagination import CustomPageNumberPagination
 from apps.api.serializers import (
+    CartCreateSerializer,
+    FavoriteCreateSerializer,
     RecipeShortSerializer,
     SubscriptionUserSerializer,
     UserAvatarSerializer,
 )
-from apps.cart.models import Cart, CartItem
+from apps.api.serializers.users import SubscribeCreateSerializer
 from apps.core.constants import SHORT_LINK_PREFIX
 from apps.recipes.models import RecipeIngredient
 from apps.recipes.services import (
     get_txt_in_response,
     manage_user_relation_object,
 )
-from apps.users.models import Favorite, Favoriteitem, Subscribe
+from apps.users.models import Cart, Favorite, Subscribe
 
 User = get_user_model()
 
@@ -150,24 +152,20 @@ class SubscriptionMixin:
     )
     def manage_subscribe(self, request, **kwargs):
         """Подписка или отписка от пользователя."""
-        user = request.user
         author = self.get_object()
         recipes_limit = self._get_recipes_limit(request)
 
         handler = manage_user_relation_object(
-            model=Subscribe,
-            relation_filter={'user': user},
-            related_obj=author,
-            related_field_name='author',
-            serializer_class=SubscriptionUserSerializer,
-            serializer_context={
-                'request': request,
-                'recipes_limit': recipes_limit,
-            },
-            already_exists_message='Вы уже подписаны на этого автора',
-            not_found_message='Вы не были подписаны на этого автора',
+            relation_model=Subscribe,
+            user_id=request.user.id,
+            target_field='author',
+            target_object_id=author.id,
+            target_object=author,
+            create_serializer=SubscribeCreateSerializer,
+            response_serializer=SubscriptionUserSerializer,
+            context={'request': request, 'recipes_limit': recipes_limit},
+            not_found_error='Вы не были подписаны на этого автора',
         )
-
         return handler(request)
 
 
@@ -188,19 +186,18 @@ class FavoriteManagerMixin:
     def manage_favorite(self, request, **kwargs):
         """Добавление или удаление рецепта из избранного."""
         recipe = self.get_object()
-        favorite, _ = Favorite.objects.get_or_create(user=request.user)
 
         handler = manage_user_relation_object(
-            model=Favoriteitem,
-            relation_filter={'favorite': favorite},
-            related_obj=recipe,
-            related_field_name='recipe',
-            serializer_class=RecipeShortSerializer,
-            serializer_context={'request': request},
-            already_exists_message='Рецепт уже добавлен в избранное',
-            not_found_message='Вы не добавляли этот рецепт в избранное',
+            relation_model=Favorite,
+            user_id=request.user.id,
+            target_field='recipe',
+            target_object_id=recipe.id,
+            target_object=recipe,
+            create_serializer=FavoriteCreateSerializer,
+            response_serializer=RecipeShortSerializer,
+            context={'request': request},
+            not_found_error='Вы не добавляли этот рецепт в избранное',
         )
-
         return handler(request)
 
 
@@ -260,19 +257,18 @@ class ShoppingCartManagerMixin:
     def manage_shopping_cart(self, request, **kwargs):
         """Добавление или удаление рецепта из корзины."""
         recipe = self.get_object()
-        cart, _ = Cart.objects.get_or_create(user=request.user)
 
         handler = manage_user_relation_object(
-            model=CartItem,
-            relation_filter={'cart': cart},
-            related_obj=recipe,
-            related_field_name='recipe',
-            serializer_class=RecipeShortSerializer,
-            serializer_context={'request': request},
-            already_exists_message='Рецепт уже добавлен в корзину',
-            not_found_message='Вы не добавляли этот рецепт в корзину',
+            relation_model=Cart,
+            user_id=request.user.id,
+            target_field='recipe',
+            target_object_id=recipe.id,
+            target_object=recipe,
+            create_serializer=CartCreateSerializer,
+            response_serializer=RecipeShortSerializer,
+            context={'request': request},
+            not_found_error='Вы не добавляли этот рецепт в корзину',
         )
-
         return handler(request)
 
 

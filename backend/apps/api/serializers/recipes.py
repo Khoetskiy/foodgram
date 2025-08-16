@@ -3,7 +3,6 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.api.serializers import Base64ImageField
-from apps.cart.models import CartItem
 from apps.recipes.models import (
     Ingredient,
     Recipe,
@@ -11,7 +10,7 @@ from apps.recipes.models import (
     Tag,
 )
 from apps.recipes.services import create_recipe_ingredients
-from apps.users.models import Favoriteitem
+from apps.users.models import Cart, Favorite
 
 User = get_user_model()
 
@@ -205,9 +204,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             bool: True, если рецепт в избранном, иначе False.
         """
         user = self._get_authenticated_user()
-        return Favoriteitem.objects.filter(
-            recipe=obj, favorite__user=user
-        ).exists()
+        return Favorite.objects.filter(recipe=obj, user=user).exists()
 
     def get_is_in_shopping_cart(self, obj):
         """
@@ -220,7 +217,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             bool: True, если рецепт добавлен в корзину, иначе False.
         """
         user = self._get_authenticated_user()
-        return CartItem.objects.filter(recipe=obj, cart__user=user).exists()
+        return Cart.objects.filter(recipe=obj, user=user).exists()
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
@@ -229,3 +226,19 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для добавления рецептов в избранное."""
+
+    class Meta:
+        model = Favorite
+        fields = ('user', 'recipe')
+
+
+class CartCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для добавления рецептов в корзину."""
+
+    class Meta:
+        model = Cart
+        fields = ('user', 'recipe')
