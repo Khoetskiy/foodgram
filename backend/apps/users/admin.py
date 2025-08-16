@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
+from django.db.models import Count
 
 from apps.core.admin_mixins import (
     BaseRecipeCollectionInLineMixin,
@@ -67,11 +68,13 @@ class FavoriteInline(NoChangeMixin, BaseRecipeCollectionInLineMixin):
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     """
-    Админ-класс для модели пользователя.
+    Админ-класс для управления пользователя.
 
-    Включает:
-        - Инлайн-класс SubscriptionsInline для подписок пользователя.
-        - Инлайн-класс SubscribersInline для подписчиков пользователя.
+    Включает InLines:
+        - SubscriptionsInline: Подписки пользователя
+        - SubscribersInline: Подписчики пользователя
+        - CartInline: Рецепты в корзине пользователя
+        - FavoriteInline: Избранные рецепты пользователя
     """
 
     inlines = (
@@ -80,18 +83,28 @@ class UserAdmin(BaseUserAdmin):
         CartInline,
         FavoriteInline,
     )
-    list_display = ('username', 'email', 'first_name', 'last_name', 'avatar')
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'recipes_count',
+        'subscribers_count',
+        'is_active',
+        'is_superuser',
+        'avatar',
+    )
     search_fields = ('username', 'email', 'first_name', 'last_name')
     empty_value_display = '-'
-    list_filter = ('is_active', 'is_staff', 'is_superuser')
-    ordering = ('email',)
+    list_filter = ('is_active', 'is_staff', 'is_superuser', 'date_joined')
+    ordering = ('username',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (
             'Персональная информация',
             {'fields': ('username', 'first_name', 'last_name')},
         ),
-        ('Фото', {'fields': ('avatar',)}),
+        ('Фото профиля', {'fields': ('avatar',)}),
         (
             'Разрешения',
             {
@@ -104,7 +117,13 @@ class UserAdmin(BaseUserAdmin):
                 'classes': ('collapse',),
             },
         ),
-        ('Важные даты', {'fields': ('last_login', 'date_joined')}),
+        (
+            'Системная информация',
+            {
+                'fields': ('last_login', 'date_joined'),
+                'classes': ('collapse',),
+            },
+        ),
     )
     readonly_fields = ('last_login', 'date_joined')
     add_fieldsets = (
@@ -119,10 +138,31 @@ class UserAdmin(BaseUserAdmin):
                     'username',
                     'first_name',
                     'last_name',
+                    'avatar',
                 ),
             },
         ),
     )
+
+    @admin.display(description='рецептов', ordering='recipes_count')
+    def recipes_count(self, obj):
+        """Отображает количество рецептов пользователя."""
+        return obj.recipes_count
+
+    @admin.display(
+        description='подписчиков', ordering='subscribers_count'
+    )
+    def subscribers_count(self, obj):
+        """Отображает количество подписчиков пользователя."""
+        return obj.subscribers_count
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(recipes_count=Count('recipes'))
+            .annotate(subscribers_count=Count('subscribers'))
+        )
 
 
 @admin.register(Subscribe)
