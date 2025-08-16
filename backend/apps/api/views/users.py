@@ -21,7 +21,7 @@ from apps.core.constants import DISABLED_ACTIONS_DJOSER
 User = get_user_model()
 
 
-class CustomUserViewSet(
+class UserViewSet(
     DisableDjoserActionsMixin,
     AvatarManagementMixin,
     SubscriptionMixin,

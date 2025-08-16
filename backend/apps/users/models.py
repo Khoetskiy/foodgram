@@ -11,15 +11,10 @@ from django.db.models import F, Q
 
 from apps.core.constants import (
     ALLOWED_EXTENSIONS,
-    CUSTOMUSER_AVATAR_HELP,
-    CUSTOMUSER_EMAIL_HELP,
-    CUSTOMUSER_FIRSTNAME_HELP,
-    CUSTOMUSER_LASTNAME_HELP,
-    CUSTOMUSER_USERNAME_HELP,
     EMAIL_LENGTH,
     FAVORITE_RECIPE_HELP,
     FAVORITE_USER_HELP,
-    FAVORITEITEM_FAVORITE_HELP,  # FIXME: 
+    FAVORITEITEM_FAVORITE_HELP,  # FIXME:
     FIRST_NAME_LENGTH,
     FIRST_NAME_MIN_LENGTH,
     LAST_NAME_LENGTH,
@@ -27,6 +22,11 @@ from apps.core.constants import (
     NAME_VALIDATION_REGEX,
     SUBSCRIBE_AUTHOR_HELP,
     SUBSCRIBE_USER_HELP,
+    USER_AVATAR_HELP,
+    USER_EMAIL_HELP,
+    USER_FIRSTNAME_HELP,
+    USER_LASTNAME_HELP,
+    USER_USERNAME_HELP,
     USERNAME_LENGTH,
     USERNAME_MIN_LENGTH,
     USERNAME_VALIDATION_REGEX,
@@ -37,7 +37,7 @@ from apps.core.utils import capitalize_name, truncate_text
 from apps.core.validators import validate_file_size, validate_safe_filename
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """
     Кастомная модель пользователя, расширяющая AbstractUser.
     Использует email в качестве основного идентификатора (USERNAME_FIELD).
@@ -59,7 +59,7 @@ class CustomUser(AbstractUser):
         'имя пользователя',
         max_length=USERNAME_LENGTH,
         unique=True,
-        help_text=CUSTOMUSER_USERNAME_HELP,
+        help_text=USER_USERNAME_HELP,
         validators=[
             MinLengthValidator(
                 USERNAME_MIN_LENGTH,
@@ -80,12 +80,12 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         'электронная почта',
         max_length=EMAIL_LENGTH,
-        help_text=CUSTOMUSER_EMAIL_HELP,
+        help_text=USER_EMAIL_HELP,
         unique=True,
     )
     first_name = models.CharField(
         'Имя',
-        help_text=CUSTOMUSER_FIRSTNAME_HELP,
+        help_text=USER_FIRSTNAME_HELP,
         max_length=FIRST_NAME_LENGTH,
         validators=[
             MinLengthValidator(
@@ -103,7 +103,7 @@ class CustomUser(AbstractUser):
     )
     last_name = models.CharField(
         'Фамилия',
-        help_text=CUSTOMUSER_LASTNAME_HELP,
+        help_text=USER_LASTNAME_HELP,
         max_length=LAST_NAME_LENGTH,
         validators=[
             MinLengthValidator(
@@ -124,7 +124,7 @@ class CustomUser(AbstractUser):
         upload_to=get_upload_path,
         blank=True,
         null=True,
-        help_text=CUSTOMUSER_AVATAR_HELP,
+        help_text=USER_AVATAR_HELP,
         validators=[
             FileExtensionValidator(
                 ALLOWED_EXTENSIONS,
@@ -180,19 +180,19 @@ class Subscribe(TimeStampModel):
     Модель подписок между пользователями.
 
     Attributes:
-        user (CustomUser): Кто подписывается.
-        author (CustomUser): На кого подписываются.
+        user (User): Кто подписывается.
+        author (User): На кого подписываются.
     """
 
     user = models.ForeignKey(
-        CustomUser,
+        User,
         verbose_name='подписчик',
         on_delete=models.CASCADE,
         help_text=SUBSCRIBE_USER_HELP,
         related_name='subscriptions',
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         verbose_name='автор контента',
         on_delete=models.CASCADE,
         help_text=SUBSCRIBE_AUTHOR_HELP,
@@ -232,7 +232,7 @@ class UserRecipeRelation(TimeStampModel):
     """
 
     user = models.ForeignKey(
-        CustomUser,
+        User,
         verbose_name='пользователь',
         on_delete=models.CASCADE,
         help_text='Пользователь, связанный с рецептом.',

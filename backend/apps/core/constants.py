@@ -16,7 +16,7 @@ MAX_AMOUNT_INGREDIENTS = 1000
 # --- Ограничения для полей модели MeasurementUnit ---
 MEASUREMENTUNIT_MAX_NAME_LENGTH = 64
 
-# --- Ограничения для полей модели CustomUser ---
+# --- Ограничения для полей модели User ---
 USERNAME_LENGTH = FIRST_NAME_LENGTH = LAST_NAME_LENGTH = 150
 USERNAME_MIN_LENGTH = FIRST_NAME_MIN_LENGTH = LAST_NAME_MIN_LENGTH = 4
 USERNAME_VALIDATION_REGEX = r'^\w+$'
@@ -52,21 +52,21 @@ PAGE_SIZE_PAGINATION = 10
 MAX_PAGE_SIZE_PAGINATION = 50
 
 # --- Help texts для моделей приложения users ---
-CUSTOMUSER_USERNAME_HELP = (
+USER_USERNAME_HELP = (
     'Уникальное имя пользователя. '
     'Должно содержать только латинские буквы, цифры и подчёркивания. '
     f'Минимум {USERNAME_MIN_LENGTH} символов(а).'
 )
-CUSTOMUSER_EMAIL_HELP = (
+USER_EMAIL_HELP = (
     'Действующий и уникальный адрес электронной почты, используемый для входа.'
 )
-CUSTOMUSER_FIRSTNAME_HELP = (
+USER_FIRSTNAME_HELP = (
     'Введите имя (только буквы кириллицы или латиницы).'
 )
-CUSTOMUSER_LASTNAME_HELP = (
+USER_LASTNAME_HELP = (
     'Введите фамилию (только буквы кириллицы или латиницы).'
 )
-CUSTOMUSER_AVATAR_HELP = (
+USER_AVATAR_HELP = (
     f'Загрузите фото в формате {", ".join(ALLOWED_EXTENSIONS)}. '
     f'Максимальный размер: {MAX_SIZE_FILE}МБ.'
 )

@@ -12,11 +12,10 @@ from .recipes import (
     RecipeViewSet,
     TagViewSet,
 )
-from .users import CustomUserViewSet
+from .users import UserViewSet
 
 __all__ = [
     'AvatarManagementMixin',
-    'CustomUserViewSet',
     'DisableDjoserActionsMixin',
     'FavoriteManagerMixin',
     'IngredientViewSet',
@@ -25,4 +24,5 @@ __all__ = [
     'ShortLinkMixin',
     'SubscriptionMixin',
     'TagViewSet',
+    'UserViewSet',
 ]
