@@ -193,7 +193,7 @@ class RecipeAdmin(admin.ModelAdmin):
         ),
     )
 
-    @admin.display(description='название')
+    @admin.display(description='название', ordering='name')
     def short_name(self, obj):
         """Возвращает сокращенное название рецепта."""
         return truncate_text(obj.name, length=TEXT_TRUNCATE_LENGTH_ADMIN)
@@ -203,12 +203,12 @@ class RecipeAdmin(admin.ModelAdmin):
         """Возвращает сокращенное описание рецепта."""
         return truncate_text(obj.text, length=TEXT_TRUNCATE_LENGTH_ADMIN)
 
-    @admin.display(description='время приготовления')
+    @admin.display(description='время приготовления', ordering='cooking_time')
     def cooking_time_display(self, obj):
         """Возвращает человекочитаемое время приготовления."""
         return format_duration_time(obj.cooking_time)
 
-    @admin.display(description='В избранном (раз)')
+    @admin.display(description='В избранном (раз)', ordering='fav_count')
     def is_favorited(self, obj):
         """Возвращает кол.-во. пользователей, добавивших рецепт в избранное."""
         return obj.fav_count
