@@ -1,5 +1,6 @@
 # ruff: noqa: RUF012 RUF002
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -55,6 +56,8 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
+    username_validator = UnicodeUsernameValidator()
+
     username = models.CharField(
         'имя пользователя',
         max_length=USERNAME_LENGTH,
@@ -68,13 +71,7 @@ class User(AbstractUser):
                     f'{USERNAME_MIN_LENGTH} символов(а)'
                 ),
             ),
-            RegexValidator(
-                regex=USERNAME_VALIDATION_REGEX,
-                message=(
-                    'Имя пользователя может содержать только '
-                    'латинские буквы, цифры и подчёркивания.'
-                ),
-            ),
+            username_validator,
         ],
     )
     email = models.EmailField(
@@ -92,7 +89,7 @@ class User(AbstractUser):
                 FIRST_NAME_MIN_LENGTH,
                 message=(
                     'Имя не может быть короче '
-                    '{FIRST_NAME_MIN_LENGTH} символов(а)'
+                    f'{FIRST_NAME_MIN_LENGTH} символов(а)'
                 ),
             ),
             RegexValidator(
@@ -123,7 +120,7 @@ class User(AbstractUser):
         'аватар',
         upload_to=get_upload_path,
         blank=True,
-        null=True,
+        default='',
         help_text=USER_AVATAR_HELP,
         validators=[
             FileExtensionValidator(
@@ -255,7 +252,9 @@ class UserRecipeRelation(TimeStampModel):
         ]
 
     def __str__(self) -> str:
-        return truncate_text(f'{self.user.username} → {self.recipe.name}')
+        return truncate_text(
+            f'{self.recipe.name} → {self.user.username}'
+        )  # FIXME: Какие отображение выбрать?
 
 
 class Cart(UserRecipeRelation):
@@ -264,12 +263,10 @@ class Cart(UserRecipeRelation):
     class Meta(UserRecipeRelation.Meta):
         verbose_name = 'корзина'
         verbose_name_plural = 'корзины'
-        # verbose_name = 'рецепт в корзине'
-        # verbose_name_plural = 'рецепты в корзине'
         default_related_name = 'carts'
 
-    def __str__(self) -> str:
-        return f'{self.recipe} в корзине {self.user.username}'  # FIXME:
+    # def __str__(self) -> str:
+    #     return f'{self.recipe} в корзине {self.user.username}'
 
 
 class Favorite(UserRecipeRelation):
@@ -280,5 +277,5 @@ class Favorite(UserRecipeRelation):
         verbose_name_plural = 'избранные'
         default_related_name = 'favorites'
 
-    def __str__(self) -> str:
-        return f'{self.recipe} в избранном {self.user.username}'  # FIXME:
+    # def __str__(self) -> str:
+    #     return f'{self.recipe} в избранном {self.user.username}'
