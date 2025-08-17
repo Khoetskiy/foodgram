@@ -100,7 +100,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'empty': 'Необходимо выбрать хотя бы один тег.',
             'required': 'Поле тегов обязательно для заполнения.',
         },
-    )
+    )  # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение.
 
     class Meta:
         model = Recipe
@@ -110,7 +110,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'image',
             'name',
             'text',
-            'cooking_time',  # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение
+            'cooking_time',
             'author',
         )
 

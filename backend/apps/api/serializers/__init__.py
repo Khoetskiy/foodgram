@@ -1,6 +1,5 @@
 # ruff: noqa: TID252
 from .fields import Base64ImageField
-from .mixins import BaseRelationCreateSerializer
 from .recipes import (
     CartCreateSerializer,
     FavoriteCreateSerializer,
@@ -22,7 +21,6 @@ from .users import (
 
 __all__ = [
     'Base64ImageField',
-    'BaseRelationCreateSerializer',
     'CartCreateSerializer',
     'FavoriteCreateSerializer',
     'IngredientSerializer',
