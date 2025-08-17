@@ -21,7 +21,7 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
-        # fields = '__all__'  # REVIEW: Используй '__all__'
+        # fields = '__all__'  # REVIEW: Используй '__all__' (СПРОСИЛ)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -34,6 +34,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
+        # fields = '__all__'  # REVIEW: Используй '__all__' (СПРОСИЛ)
 
 
 class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
@@ -42,8 +43,6 @@ class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         source='ingredient', queryset=Ingredient.objects.all()
     )
-    # id = serializers.IntegerField(source='ingredient.id')  # FIXME:
-
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
@@ -99,9 +98,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         allow_empty=False,
         error_messages={
             'empty': 'Необходимо выбрать хотя бы один тег.',
-            'required': 'Поле тегов обязательно для заполнения.',  # TODO: Сделать так же в других местах где надо по Redocs
+            'required': 'Поле тегов обязательно для заполнения.',
         },
-    )  # FIXME: Провалидировать дубли тега или тихо удлаять по умолчанию?
+    )
 
     class Meta:
         model = Recipe
@@ -111,7 +110,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'image',
             'name',
             'text',
-            'cooking_time',  # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение.
+            'cooking_time',  # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение
             'author',
         )
 
@@ -161,6 +160,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         create_recipe_ingredients(instance, ingredients_data)
         instance.tags.set(tags_data)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):  # FIXME: либо в ViewSets?
+        return RecipeReadSerializer(instance, context=self.context).data
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
