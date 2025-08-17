@@ -13,9 +13,6 @@ from django.db.models import F, Q
 from apps.core.constants import (
     ALLOWED_EXTENSIONS,
     EMAIL_LENGTH,
-    FAVORITE_RECIPE_HELP,
-    FAVORITE_USER_HELP,
-    FAVORITEITEM_FAVORITE_HELP,  # FIXME:
     FIRST_NAME_LENGTH,
     FIRST_NAME_MIN_LENGTH,
     LAST_NAME_LENGTH,
@@ -30,7 +27,6 @@ from apps.core.constants import (
     USER_USERNAME_HELP,
     USERNAME_LENGTH,
     USERNAME_MIN_LENGTH,
-    USERNAME_VALIDATION_REGEX,
 )
 from apps.core.models import TimeStampModel
 from apps.core.services import get_upload_path

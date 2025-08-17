@@ -19,7 +19,6 @@ MEASUREMENTUNIT_MAX_NAME_LENGTH = 64
 # --- Ограничения для полей модели User ---
 USERNAME_LENGTH = FIRST_NAME_LENGTH = LAST_NAME_LENGTH = 150
 USERNAME_MIN_LENGTH = FIRST_NAME_MIN_LENGTH = LAST_NAME_MIN_LENGTH = 2
-USERNAME_VALIDATION_REGEX = r'^\w+$'
 NAME_VALIDATION_REGEX = r'^[A-Za-zА-Яа-яЁё]+$'
 EMAIL_LENGTH = 254
 
@@ -60,23 +59,13 @@ USER_USERNAME_HELP = (
 USER_EMAIL_HELP = (
     'Действующий и уникальный адрес электронной почты, используемый для входа.'
 )
-USER_FIRSTNAME_HELP = (
-    'Введите имя (только буквы кириллицы или латиницы).'
-)
-USER_LASTNAME_HELP = (
-    'Введите фамилию (только буквы кириллицы или латиницы).'
-)
+USER_FIRSTNAME_HELP = 'Введите имя (только буквы кириллицы или латиницы).'
+USER_LASTNAME_HELP = 'Введите фамилию (только буквы кириллицы или латиницы).'
 USER_AVATAR_HELP = (
     f'Загрузите фото в формате {", ".join(ALLOWED_EXTENSIONS)}. '
     f'Максимальный размер: {MAX_SIZE_FILE}МБ.'
 )
 
-FAVORITE_USER_HELP = 'Пользователь, у которого есть список избранного.'
-
-FAVORITEITEM_FAVORITE_HELP = (
-    'Список избранного, к которому относится этот элемент.'
-)
-FAVORITE_RECIPE_HELP = 'Рецепт, добавленный в избранное.'
 
 SUBSCRIBE_USER_HELP = 'Пользователь, который подписывается.'
 SUBSCRIBE_AUTHOR_HELP = 'Пользователь, на которого подписываются.'
