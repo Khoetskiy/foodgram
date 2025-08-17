@@ -149,9 +149,7 @@ class UserAdmin(BaseUserAdmin):
         """Отображает количество рецептов пользователя."""
         return obj.recipes_count
 
-    @admin.display(
-        description='подписчиков', ordering='subscribers_count'
-    )
+    @admin.display(description='подписчиков', ordering='subscribers_count')
     def subscribers_count(self, obj):
         """Отображает количество подписчиков пользователя."""
         return obj.subscribers_count
@@ -160,8 +158,8 @@ class UserAdmin(BaseUserAdmin):
         return (
             super()
             .get_queryset(request)
-            .annotate(recipes_count=Count('recipes'))
-            .annotate(subscribers_count=Count('subscribers'))
+            .annotate(recipes_count=Count('recipes', distinct=True))
+            .annotate(subscribers_count=Count('subscribers', distinct=True))
         )
 
 
