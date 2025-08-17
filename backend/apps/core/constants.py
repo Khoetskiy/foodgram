@@ -1,7 +1,7 @@
 # --- Ограничения для полей модели Recipe ---
 RECIPE_NAME_MAX_LENGTH = 256
 MIN_COOK_TIME = 1  # в минутах
-MAX_COOK_TIME = 60 * 12
+MAX_COOK_TIME = 60 * 24
 RECIPE_SHORT_CODE_MAX_LENGTH = 8
 
 # --- Ограничения для полей модели Tag ---

@@ -6,7 +6,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.api.pagination import CustomPageNumberPagination
+from apps.api.pagination import LimitPageNumberPagination
 from apps.api.serializers import (
     CartCreateSerializer,
     FavoriteCreateSerializer,
@@ -66,34 +66,28 @@ class AvatarManagementMixin:
 
     @action(
         detail=False,
-        methods=['put', 'delete'],
+        methods=['put'],
         url_path='me/avatar',
         url_name='me_avatar',
         permission_classes=[IsAuthenticated],
     )
-    def manage_avatar(self, request):
-        """Обработка изменения или удаления аватара текущего пользователя."""
-        user = request.user
-
-        if request.method == 'PUT':
-            return self._upload_avatar(user, request.data)
-
-        if request.method == 'DELETE':
-            return self._delete_avatar(user)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def _upload_avatar(self, user, data):
+    def avatar(self, request):
         """Загрузка нового аватара."""
-        serializer = UserAvatarSerializer(instance=user, data=data)
+        serializer = UserAvatarSerializer(
+            instance=request.user, data=request.data
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def _delete_avatar(self, user):
+    @avatar.mapping.delete
+    def delete_avatar(self, request):
         """Удаление аватара пользователя."""
+        user = request.user
+
         if not user.avatar:
             return Response(
-                {'detail': 'Аватар уже был удален.'},
+                {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_204_NO_CONTENT,
             )
         user.avatar.delete(save=False)
@@ -113,13 +107,6 @@ class SubscriptionMixin:
     подписки/отписки от авторов.
     """
 
-    def _get_recipes_limit(self, request):
-        """Получение лимита рецептов из параметров запроса."""
-        recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit is not None and recipes_limit.isdigit():
-            return int(recipes_limit)
-        return None
-
     @action(
         detail=False,
         methods=['get'],
@@ -127,7 +114,7 @@ class SubscriptionMixin:
         url_path='subscriptions',
         permission_classes=[IsAuthenticated],
     )
-    def get_subscriptions(self, request):
+    def subscriptions(self, request):
         """
         Возвращает пользователей, на которых подписан текущий пользователь.
         """
@@ -135,13 +122,12 @@ class SubscriptionMixin:
         authors = self.get_queryset().filter(
             pk__in=subscriptions.values('author')
         )
-        recipes_limit = self._get_recipes_limit(request)
-        paginator = CustomPageNumberPagination()
+        paginator = LimitPageNumberPagination()
         paginated_authors = paginator.paginate_queryset(authors, request)
         serializer = SubscriptionUserSerializer(
             paginated_authors,
             many=True,
-            context={'request': request, 'recipes_limit': recipes_limit},
+            context={'request': request},
         )
         return paginator.get_paginated_response(serializer.data)
 
@@ -155,7 +141,6 @@ class SubscriptionMixin:
     def manage_subscribe(self, request, **kwargs):
         """Подписка или отписка от пользователя."""
         author = self.get_object()
-        recipes_limit = self._get_recipes_limit(request)
 
         handler = manage_user_relation_object(
             relation_model=Subscribe,
@@ -165,7 +150,7 @@ class SubscriptionMixin:
             target_object=author,
             create_serializer=SubscribeCreateSerializer,
             response_serializer=SubscriptionUserSerializer,
-            context={'request': request, 'recipes_limit': recipes_limit},
+            context={'request': request},
             not_found_error='Вы не были подписаны на этого автора',
         )
         return handler(request)

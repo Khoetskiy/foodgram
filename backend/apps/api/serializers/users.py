@@ -97,7 +97,7 @@ class SubscriptionUserSerializer(UserReadSerializer):
     - Количество рецептов автора (поле `recipes_count`)
 
     Attributes:
-        recipes_count (SerializerMethodField): Количество рецептов автора.
+        recipes_count (IntegerField): Количество рецептов автора.
         recipes (SerializerMethodField): Список рецептов в сокращённой форме.
     """
 
@@ -106,6 +106,18 @@ class SubscriptionUserSerializer(UserReadSerializer):
 
     class Meta(UserReadSerializer.Meta):
         fields = (*UserReadSerializer.Meta.fields, 'recipes', 'recipes_count')
+
+    def _get_recipes_limit(self):
+        """Получение лимита рецептов из параметров запроса."""
+        request = self.context.get('request')
+        if not request:
+            return None
+        recipes_limit = request.query_params.get('recipes_limit')
+        return (
+            int(recipes_limit)
+            if recipes_limit and recipes_limit.isdigit()
+            else None
+        )
 
     def get_recipes(self, obj):
         """
@@ -119,10 +131,10 @@ class SubscriptionUserSerializer(UserReadSerializer):
         Returns:
             list: Список рецептов ограниченный по количеству.
         """
-        limit = self.context.get('recipes_limit')
+        limit = self._get_recipes_limit()
         recipes = obj.recipes.all()
         if limit is not None:
-            recipes = recipes[: int(limit)]
+            recipes = recipes[:limit]
         return RecipeShortSerializer(
             recipes, many=True, context=self.context
         ).data
