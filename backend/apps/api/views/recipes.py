@@ -90,11 +90,11 @@ class RecipeViewSet(
     #     serializer = self.get_serializer(data=request.data)
     #     serializer.is_valid(raise_exception=True)
     #     recipe = serializer.save(author=request.user)
-    #     return self._get_read_response(recipe, status.HTTP_201_CREATED)  # REVIEW: Используй метод to_representation в сериализаторе для возврата нужного сериализатора.
+    #     return self._get_read_response(recipe, status.HTTP_201_CREATED)  # REVIEW: Используй метод to_representation в сериализаторе для возврата нужного сериализатора. (СПРОСИЛ)
 
     # def update(self, request, *args, **kwargs):
     #     """
-    #     Переопределено для возврата данных через `RecipeReadSerializer`  # REVIEW: Смотри коммент выше.
+    #     Переопределено для возврата данных через `RecipeReadSerializer`  # REVIEW: Смотри коммент выше. (СПРОСИЛ)
     #     после успешного обновления.
     #     """
     #     partial = kwargs.pop('partial', False)

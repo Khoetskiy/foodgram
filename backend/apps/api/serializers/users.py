@@ -141,6 +141,11 @@ class SubscriptionUserSerializer(UserReadSerializer):
 
 
 class SubscribeCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания подписки между пользователями.
+    Проверяет, чтобы пользователь не мог подписаться на самого себя.
+    """
+
     class Meta:
         model = Subscribe
         fields = ('user', 'author')

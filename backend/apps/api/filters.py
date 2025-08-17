@@ -68,7 +68,9 @@ class RecipeFilter(filters.FilterSet):
         if not user.is_authenticated:
             return queryset.none() if value else queryset
 
-        if value == 1:
+        if (
+            value == 1
+        ):  # REVIEW: Можно убрать сравнение и оставить только if value:()
             return queryset.filter(favorited_by__favorite__user=user)
         return queryset.exclude(favorited_by__favorite__user=user)
 

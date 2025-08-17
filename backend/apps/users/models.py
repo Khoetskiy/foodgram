@@ -275,3 +275,6 @@ class Favorite(UserRecipeRelation):
 
     # def __str__(self) -> str:
     #     return f'{self.recipe} в избранном {self.user.username}'
+
+
+# REVIEW: Ответить зачем использовал Cart, CartItem, Favorite, FavoriteItem

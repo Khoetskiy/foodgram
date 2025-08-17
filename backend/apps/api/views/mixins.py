@@ -84,7 +84,6 @@ class AvatarManagementMixin:
     def delete_avatar(self, request):
         """Удаление аватара пользователя."""
         user = request.user
-
         if not user.avatar:
             return Response(
                 {'detail': 'Аватар отсутствует.'},

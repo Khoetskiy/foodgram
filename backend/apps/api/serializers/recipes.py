@@ -92,6 +92,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         required=True,
         allow_null=False,
     )
+    # REVIEW: Валидировать дублирование тегов? (СПРОСИЛ)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True,
@@ -100,8 +101,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'empty': 'Необходимо выбрать хотя бы один тег.',
             'required': 'Поле тегов обязательно для заполнения.',
         },
-    )  # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение.
+    )
 
+    # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение (СПРОСИЛ)
     class Meta:
         model = Recipe
         fields = (
