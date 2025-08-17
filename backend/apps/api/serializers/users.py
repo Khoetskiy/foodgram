@@ -40,12 +40,13 @@ class UserReadSerializer(serializers.ModelSerializer):
             obj (User): Автор, на которого может быть подписка.
 
         Returns:
-            bool: True, если request.user подписан на obj, иначе False.
+            bool: True, user подписан на obj, иначе False.
         """
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-        return Subscribe.objects.filter(user=request.user, author=obj).exists()
+        user = self.context['request'].user
+        return (
+            user.is_authenticated
+            and obj.subscribers.filter(user=user).exists()
+        )
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -65,7 +66,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'last_name',
             'password',
         )
-        read_only_fields = ('id',)
         extra_kwargs = {'password': {'write_only': True}}  # noqa: RUF012
 
     def create(self, validate_data):
@@ -101,23 +101,11 @@ class SubscriptionUserSerializer(UserReadSerializer):
         recipes (SerializerMethodField): Список рецептов в сокращённой форме.
     """
 
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(read_only=True)
     recipes = serializers.SerializerMethodField()
 
     class Meta(UserReadSerializer.Meta):
         fields = (*UserReadSerializer.Meta.fields, 'recipes', 'recipes_count')
-
-    def get_recipes_count(self, obj):
-        """
-        Вычисляемое поле, показывающее количество рецептов автора.
-
-        Args:
-            obj (User): Автор, на которого подписан текущий пользователь.
-
-        Returns:
-            int: Общее число рецептов у автора.
-        """
-        return obj.recipes.count()
 
     def get_recipes(self, obj):
         """

@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -132,7 +132,9 @@ class SubscriptionMixin:
         Возвращает пользователей, на которых подписан текущий пользователь.
         """
         subscriptions = Subscribe.objects.filter(user=request.user)
-        authors = User.objects.filter(pk__in=subscriptions.values('author'))
+        authors = self.get_queryset().filter(
+            pk__in=subscriptions.values('author')
+        )
         recipes_limit = self._get_recipes_limit(request)
         paginator = CustomPageNumberPagination()
         paginated_authors = paginator.paginate_queryset(authors, request)
@@ -167,6 +169,10 @@ class SubscriptionMixin:
             not_found_error='Вы не были подписаны на этого автора',
         )
         return handler(request)
+
+    def get_queryset(self):
+        """Добавляет аннотацию для `recipes_count`."""
+        return super().get_queryset().annotate(recipes_count=Count('recipes'))
 
 
 class FavoriteManagerMixin:

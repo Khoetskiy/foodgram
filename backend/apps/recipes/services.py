@@ -155,7 +155,7 @@ def create_recipe_ingredients(recipe, ingredients_data: list[dict]) -> None:
         [
             RecipeIngredient(
                 recipe=recipe,
-                ingredient_id=ingredient_data['ingredient']['id'],
+                ingredient=ingredient_data['ingredient'],
                 amount=ingredient_data['amount'],
             )
             for ingredient_data in ingredients_data
