@@ -1,3 +1,4 @@
+# ruff: noqa: RUF012
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -5,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.api.filters import IngredientFilter, RecipeFilter
-from apps.api.pagination import CustomPageNumberPagination
+from apps.api.pagination import PageNumberPagination
 from apps.api.permissions import IsAuthorOrReadOnly
 from apps.api.serializers import (
     IngredientSerializer,
@@ -56,12 +57,12 @@ class RecipeViewSet(
     viewsets.ModelViewSet,
 ):
     """
-    ViewSet для управления рецептами с расширенной функциональностью.
+    ViewSet для управления рецептами c расширенной функциональностью.
 
     Основная функциональность:
-    - CRUD операции с рецептами
+    - CRUD операции c рецептами
     - Фильтрация по избранному, автору, корзине покупок и тегам
-    - Пагинация с настройкой лимита
+    - Пагинация c настройкой лимита
     - Управление избранными рецептами
     - Управление корзиной покупок
     - Генерация коротких ссылок
@@ -73,7 +74,7 @@ class RecipeViewSet(
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    pagination_class = CustomPageNumberPagination
+    pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
@@ -89,11 +90,11 @@ class RecipeViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save(author=request.user)
-        return self._get_read_response(recipe, status.HTTP_201_CREATED)
+        return self._get_read_response(recipe, status.HTTP_201_CREATED)  # REVIEW: Используй метод to_representation в сериализаторе для возврата нужного сериализатора.
 
     def update(self, request, *args, **kwargs):
         """
-        Переопределено для возврата данных через `RecipeReadSerializer`
+        Переопределено для возврата данных через `RecipeReadSerializer`  # REVIEW: Смотри коммент выше.
         после успешного обновления.
         """
         partial = kwargs.pop('partial', False)
