@@ -93,6 +93,7 @@ ignore = [
     "D105",   # Missing docstring in magic method
     "D106",   # Missing docstring meta class
     "D107",   # Missing docstring in __init__
+    "D203",   # incorrect-blank-line-before-class (конфликтует с D211)
     "D205",   # 1 blank line required between summary line and description
     "D212",   # Multi-line docstring summary should start at the first line
     "D413",   # Missing blank line after last section
@@ -109,6 +110,13 @@ ignore = [
     "BLE001", # Перехват "слепых" исключений
     "T201",   # Печать print
     "RUF002",  # Использование кириллицы
+
+    "ARG", # Неиспользуемые аргументы функции
+    "PLR0913", # Too many arguments
+    "D417", # Missing trailing newline in docstring
+    "D101", # Missing docstring in public class
+    "S10", # password is easy
+
 ]
 
 unfixable = [
