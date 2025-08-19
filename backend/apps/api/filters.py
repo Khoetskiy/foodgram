@@ -69,6 +69,7 @@ class RecipeFilter(filters.FilterSet):
         if value == 1:
             return queryset.filter(favorites__user=user)
         return queryset.exclude(favorites__user=user)
+
     def filter_is_in_shopping_cart(self, queryset, name, value):
         """Фильтрует рецепты по статусу "в корзине"."""
         user = self.request.user

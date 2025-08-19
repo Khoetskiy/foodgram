@@ -42,6 +42,7 @@ def truncate_text(
         return f'{text[: length - len(suffix)]}{suffix}'
     return text
 
+
 def translate_text(text: str, target_language: str = 'en') -> str:
     """
     Переводит текст на указанный язык c помощью GoogleTranslator.

@@ -199,7 +199,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         """Lazy import для UserReadSerializer."""
-        from .users import UserReadSerializer
+        from .users import UserReadSerializer  # noqa: PLC0415
 
         return UserReadSerializer(obj.author, context=self.context).data
 

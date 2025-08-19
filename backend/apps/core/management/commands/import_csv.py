@@ -1,5 +1,7 @@
 import csv
 
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.db import IntegrityError
@@ -50,7 +52,7 @@ class Command(BaseCommand):
             return
 
         try:
-            with open(file_path, encoding='utf-8', newline='') as f:
+            with Path(file_path).open('wb', encoding='utf-8', newline='') as f:
                 reader = csv.DictReader(f)
                 model_class = MODEL_CLASS_MAP[model_name]
                 self.import_data(reader, model_class)
