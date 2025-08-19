@@ -67,7 +67,7 @@ GET    /api/tags/             - Список тегов
 GET    /api/ingredients/      - Список ингредиентов
 ```
 
->[!info] **Полная документация API:** https://foodgram.servepics.com/api/docs/
+>**Полная документация API:** https://foodgram.servepics.com/api/docs/
 
 ## Технологии
 
@@ -86,7 +86,7 @@ GET    /api/ingredients/      - Список ингредиентов
 
 ## Локальный запуск в Docker
 
->[!attention]+ Предварительные требования:
+> **Предварительные требования**:
 >- Docker
 >- Git
 
