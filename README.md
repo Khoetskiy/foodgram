@@ -1,8 +1,3 @@
----
-related:
-tags:
-created:
----
 # Foodgram - Продуктовый помощник
 
 [![CI/CD Workflow](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml)
