@@ -3,7 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from apps.core.constants import MAX_PAGE_SIZE_PAGINATION, PAGE_SIZE_PAGINATION
 
 
-class CustomPageNumberPagination(PageNumberPagination):
+class LimitPageNumberPagination(PageNumberPagination):
     """
     Пагинатор, позволяющий пользователю задавать лимит на странице.
 

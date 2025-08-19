@@ -5,7 +5,7 @@ from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'users.User'
 
 SECRET_KEY = config('DJANGO_SECRET_KEY', default=get_random_secret_key())
 
@@ -35,7 +35,6 @@ LOCAL_APPS = [
     'apps.core.apps.CoreConfig',
     'apps.users.apps.UsersConfig',
     'apps.recipes.apps.RecipesConfig',
-    'apps.cart.apps.CartConfig',
     'apps.api.apps.ApiConfig',
 ]
 

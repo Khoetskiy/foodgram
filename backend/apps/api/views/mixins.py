@@ -1,25 +1,27 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.api.pagination import CustomPageNumberPagination
+from apps.api.pagination import LimitPageNumberPagination
 from apps.api.serializers import (
+    CartCreateSerializer,
+    FavoriteCreateSerializer,
     RecipeShortSerializer,
     SubscriptionUserSerializer,
     UserAvatarSerializer,
 )
-from apps.cart.models import Cart, CartItem
+from apps.api.serializers.users import SubscribeCreateSerializer
 from apps.core.constants import SHORT_LINK_PREFIX
 from apps.recipes.models import RecipeIngredient
 from apps.recipes.services import (
     get_txt_in_response,
     manage_user_relation_object,
 )
-from apps.users.models import Favorite, Favoriteitem, Subscribe
+from apps.users.models import Cart, Favorite, Subscribe
 
 User = get_user_model()
 
@@ -64,34 +66,27 @@ class AvatarManagementMixin:
 
     @action(
         detail=False,
-        methods=['put', 'delete'],
+        methods=['put'],
         url_path='me/avatar',
         url_name='me_avatar',
         permission_classes=[IsAuthenticated],
     )
-    def manage_avatar(self, request):
-        """Обработка изменения или удаления аватара текущего пользователя."""
-        user = request.user
-
-        if request.method == 'PUT':
-            return self._upload_avatar(user, request.data)
-
-        if request.method == 'DELETE':
-            return self._delete_avatar(user)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def _upload_avatar(self, user, data):
+    def avatar(self, request):
         """Загрузка нового аватара."""
-        serializer = UserAvatarSerializer(instance=user, data=data)
+        serializer = UserAvatarSerializer(
+            instance=request.user, data=request.data
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def _delete_avatar(self, user):
+    @avatar.mapping.delete
+    def delete_avatar(self, request):
         """Удаление аватара пользователя."""
+        user = request.user
         if not user.avatar:
             return Response(
-                {'detail': 'Аватар уже был удален.'},
+                {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_204_NO_CONTENT,
             )
         user.avatar.delete(save=False)
@@ -111,13 +106,6 @@ class SubscriptionMixin:
     подписки/отписки от авторов.
     """
 
-    def _get_recipes_limit(self, request):
-        """Получение лимита рецептов из параметров запроса."""
-        recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit is not None and recipes_limit.isdigit():
-            return int(recipes_limit)
-        return None
-
     @action(
         detail=False,
         methods=['get'],
@@ -125,19 +113,18 @@ class SubscriptionMixin:
         url_path='subscriptions',
         permission_classes=[IsAuthenticated],
     )
-    def get_subscriptions(self, request):
-        """
-        Возвращает пользователей, на которых подписан текущий пользователь.
-        """
+    def subscriptions(self, request):
+        """Возвращает подписки текущего пользователя."""
         subscriptions = Subscribe.objects.filter(user=request.user)
-        authors = User.objects.filter(pk__in=subscriptions.values('author'))
-        recipes_limit = self._get_recipes_limit(request)
-        paginator = CustomPageNumberPagination()
+        authors = self.get_queryset().filter(
+            pk__in=subscriptions.values('author')
+        )
+        paginator = LimitPageNumberPagination()
         paginated_authors = paginator.paginate_queryset(authors, request)
         serializer = SubscriptionUserSerializer(
             paginated_authors,
             many=True,
-            context={'request': request, 'recipes_limit': recipes_limit},
+            context={'request': request},
         )
         return paginator.get_paginated_response(serializer.data)
 
@@ -150,25 +137,24 @@ class SubscriptionMixin:
     )
     def manage_subscribe(self, request, **kwargs):
         """Подписка или отписка от пользователя."""
-        user = request.user
         author = self.get_object()
-        recipes_limit = self._get_recipes_limit(request)
 
         handler = manage_user_relation_object(
-            model=Subscribe,
-            relation_filter={'user': user},
-            related_obj=author,
-            related_field_name='author',
-            serializer_class=SubscriptionUserSerializer,
-            serializer_context={
-                'request': request,
-                'recipes_limit': recipes_limit,
-            },
-            already_exists_message='Вы уже подписаны на этого автора',
-            not_found_message='Вы не были подписаны на этого автора',
+            relation_model=Subscribe,
+            user_id=request.user.id,
+            target_field='author',
+            target_object_id=author.id,
+            target_object=author,
+            create_serializer=SubscribeCreateSerializer,
+            response_serializer=SubscriptionUserSerializer,
+            context={'request': request},
+            not_found_error='Вы не были подписаны на этого автора',
         )
-
         return handler(request)
+
+    def get_queryset(self):
+        """Добавляет аннотацию для `recipes_count`."""
+        return super().get_queryset().annotate(recipes_count=Count('recipes'))
 
 
 class FavoriteManagerMixin:
@@ -188,19 +174,18 @@ class FavoriteManagerMixin:
     def manage_favorite(self, request, **kwargs):
         """Добавление или удаление рецепта из избранного."""
         recipe = self.get_object()
-        favorite, _ = Favorite.objects.get_or_create(user=request.user)
 
         handler = manage_user_relation_object(
-            model=Favoriteitem,
-            relation_filter={'favorite': favorite},
-            related_obj=recipe,
-            related_field_name='recipe',
-            serializer_class=RecipeShortSerializer,
-            serializer_context={'request': request},
-            already_exists_message='Рецепт уже добавлен в избранное',
-            not_found_message='Вы не добавляли этот рецепт в избранное',
+            relation_model=Favorite,
+            user_id=request.user.id,
+            target_field='recipe',
+            target_object_id=recipe.id,
+            target_object=recipe,
+            create_serializer=FavoriteCreateSerializer,
+            response_serializer=RecipeShortSerializer,
+            context={'request': request},
+            not_found_error='Вы не добавляли этот рецепт в избранное',
         )
-
         return handler(request)
 
 
@@ -237,7 +222,7 @@ class ShoppingCartManagerMixin:
     def _get_shopping_ingredients(self, user):
         """Возвращает queryset ингредиентов."""
         return (
-            RecipeIngredient.objects.filter(recipe__in_carts__cart__user=user)
+            RecipeIngredient.objects.filter(recipe__carts__user=user)
             .values(
                 'ingredient__name',
                 'ingredient__measurement_unit__name',
@@ -260,19 +245,18 @@ class ShoppingCartManagerMixin:
     def manage_shopping_cart(self, request, **kwargs):
         """Добавление или удаление рецепта из корзины."""
         recipe = self.get_object()
-        cart, _ = Cart.objects.get_or_create(user=request.user)
 
         handler = manage_user_relation_object(
-            model=CartItem,
-            relation_filter={'cart': cart},
-            related_obj=recipe,
-            related_field_name='recipe',
-            serializer_class=RecipeShortSerializer,
-            serializer_context={'request': request},
-            already_exists_message='Рецепт уже добавлен в корзину',
-            not_found_message='Вы не добавляли этот рецепт в корзину',
+            relation_model=Cart,
+            user_id=request.user.id,
+            target_field='recipe',
+            target_object_id=recipe.id,
+            target_object=recipe,
+            create_serializer=CartCreateSerializer,
+            response_serializer=RecipeShortSerializer,
+            context={'request': request},
+            not_found_error='Вы не добавляли этот рецепт в корзину',
         )
-
         return handler(request)
 
 
@@ -290,7 +274,7 @@ class ShortLinkMixin:
         url_path='get-link',
         url_name='get-link',
     )
-    def get_short_link(self, request, pk=None):
+    def get_short_link(self, request, **kwargs):
         """Возвращает короткую ссылку на рецепт по его short_code."""
         recipe = self.get_object()
 

@@ -37,9 +37,7 @@ COMMANDS=(
     "recipeingredient $CSV_DIR/recipe_ingredients.csv"
     "recipetag $CSV_DIR/recipe_tags.csv"
     "cart $CSV_DIR/carts.csv"
-    "cartitem $CSV_DIR/cart_items.csv"
     "favorite $CSV_DIR/favorites.csv"
-    "favoriteitem $CSV_DIR/favorite_items.csv"
     "subscribe $CSV_DIR/subscribes.csv"
 )
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import re
 import uuid
 
@@ -19,7 +17,7 @@ def truncate_text(
     suffix: str = TEXT_TRUNCATE_SUFFIX,
 ) -> str:
     """
-    Обрезает текст и добавляет суффикс, если он превышает указанную длину
+    Обрезает текст и добавляет суффикс, если он превышает указанную длину.
 
     Args:
         text (str): Исходный текст для обрезки.
@@ -60,7 +58,6 @@ def translate_text(text: str, target_language: str = 'en') -> str:
     Returns:
         str: Переведённый текст.
     """
-
     try:
         return GoogleTranslator(
             source='auto', target=target_language
@@ -85,7 +82,7 @@ def is_cyrillic(text: str) -> bool:
 
 def capitalize_name(name: str | None) -> str:
     """
-    Нормализует имя или фамилию: первая буква — заглавная, остальные — строчные
+    Нормализует имя или фамилию: первая буква — заглавная, далее строчные.
 
     Удаляет пробелы по краям, приводит строку к виду: "Иван", "Мария", и т.п.
     Если входное значение не строка — возвращает пустую строку.

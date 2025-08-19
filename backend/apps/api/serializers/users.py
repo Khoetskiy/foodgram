@@ -40,12 +40,13 @@ class UserReadSerializer(serializers.ModelSerializer):
             obj (User): Автор, на которого может быть подписка.
 
         Returns:
-            bool: True, если request.user подписан на obj, иначе False.
+            bool: True, user подписан на obj, иначе False.
         """
-        request = self.context.get('request')
-        if not request or not request.user.is_authenticated:
-            return False
-        return Subscribe.objects.filter(user=request.user, author=obj).exists()
+        user = self.context['request'].user
+        return (
+            user.is_authenticated
+            and obj.subscribers.filter(user=user).exists()
+        )
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -65,7 +66,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'last_name',
             'password',
         )
-        read_only_fields = ('id',)
         extra_kwargs = {'password': {'write_only': True}}  # noqa: RUF012
 
     def create(self, validate_data):
@@ -97,27 +97,27 @@ class SubscriptionUserSerializer(UserReadSerializer):
     - Количество рецептов автора (поле `recipes_count`)
 
     Attributes:
-        recipes_count (SerializerMethodField): Количество рецептов автора.
+        recipes_count (IntegerField): Количество рецептов автора.
         recipes (SerializerMethodField): Список рецептов в сокращённой форме.
     """
 
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(read_only=True)
     recipes = serializers.SerializerMethodField()
 
     class Meta(UserReadSerializer.Meta):
         fields = (*UserReadSerializer.Meta.fields, 'recipes', 'recipes_count')
 
-    def get_recipes_count(self, obj):
-        """
-        Вычисляемое поле, показывающее количество рецептов автора.
-
-        Args:
-            obj (User): Автор, на которого подписан текущий пользователь.
-
-        Returns:
-            int: Общее число рецептов у автора.
-        """
-        return obj.recipes.count()
+    def _get_recipes_limit(self):
+        """Получение лимита рецептов из параметров запроса."""
+        request = self.context.get('request')
+        if not request:
+            return None
+        recipes_limit = request.query_params.get('recipes_limit')
+        return (
+            int(recipes_limit)
+            if recipes_limit and recipes_limit.isdigit()
+            else None
+        )
 
     def get_recipes(self, obj):
         """
@@ -131,10 +131,29 @@ class SubscriptionUserSerializer(UserReadSerializer):
         Returns:
             list: Список рецептов ограниченный по количеству.
         """
-        limit = self.context.get('recipes_limit')
+        limit = self._get_recipes_limit()
         recipes = obj.recipes.all()
         if limit is not None:
-            recipes = recipes[: int(limit)]
+            recipes = recipes[:limit]
         return RecipeShortSerializer(
             recipes, many=True, context=self.context
         ).data
+
+
+class SubscribeCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания подписки между пользователями.
+    Проверяет, чтобы пользователь не мог подписаться на самого себя.
+    """
+
+    class Meta:
+        model = Subscribe
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        """Дополнительная валидация - нельзя подписаться на себя."""
+        if data['user'] == data['author']:
+            raise serializers.ValidationError(
+                {'detail': 'Нельзя подписаться на самого себя'}
+            )
+        return super().validate(data)

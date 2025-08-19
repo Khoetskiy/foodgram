@@ -65,11 +65,7 @@ class MeasurementUnit(TimeStampModel):
         return truncate_text(self.name)
 
     def clean(self):
-        """Валидирует поле name, проверяя корректность данных."""
-        if not self.name:
-            raise ValidationError(
-                {'name': 'Единица измерения не может быть пустой.'}
-            )
+        """Нормализует поле name."""
         self.name = self.name.strip().lower()
         super().clean()
 
@@ -90,7 +86,6 @@ class Ingredient(TimeStampModel):
     name = models.CharField(
         'название',
         max_length=INGREDIENT_NAME_MAX_LENGTH,
-        unique=True,
         help_text=(
             f'Название ингредиента (до {INGREDIENT_NAME_MAX_LENGTH} символов)'
         ),
@@ -115,17 +110,19 @@ class Ingredient(TimeStampModel):
     class Meta(TimeStampModel.Meta):
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='unique_ingredient_measurement',
+            )
+        ]
         ordering = ('name',)
 
     def __str__(self) -> str:
-        return truncate_text(self.name)
+        return truncate_text({self.name})
 
     def clean(self):
-        """Валидирует поля модели, проверяя корректность данных."""
-        if not self.name:
-            raise ValidationError(
-                {'name': 'Название ингредиента не может быть пустым.'}
-            )
+        """Нормализует поле name."""
         self.name = self.name.strip().lower()
         super().clean()
 
@@ -157,11 +154,10 @@ class Tag(TimeStampModel):
         help_text='Уникальный URL-дружественный идентификатор тега.',
     )
 
-    class Meta(TimeStampModel.Meta):
+    class Meta:
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
         ordering = ('name',)
-        default_related_name = 'tags'
 
     def __str__(self) -> str:
         """Возвращает усеченное название тега."""
@@ -244,7 +240,7 @@ class Recipe(TimeStampModel):
             validate_file_size,
         ],
     )
-    cooking_time = models.PositiveIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         'время приготовления',
         help_text='Время приготовления в минутах',
         validators=[
@@ -279,7 +275,7 @@ class Recipe(TimeStampModel):
                 name='cooktime_range',
             ),
             models.UniqueConstraint(
-                fields=['name', 'author'], name='unique_name_author'
+                fields=['name', 'author'], name='recipe_unique_name_author'
             ),
         ]
 
@@ -317,7 +313,7 @@ class RecipeIngredient(TimeStampModel):
         help_text='Ингредиент, используемый в рецепте.',
         related_name='ingredient_in_recipes',
     )
-    amount = models.PositiveIntegerField(
+    amount = models.PositiveSmallIntegerField(
         'количество',
         help_text='Количество ингридиентов в рецепте',
         validators=[

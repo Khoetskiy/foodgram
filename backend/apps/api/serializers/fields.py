@@ -28,7 +28,6 @@ class Base64ImageField(serializers.ImageField):
         Raises:
             serializers.ValidationError: При ошибке декодирования base64-строки
         """
-
         if isinstance(data, str) and data.startswith('data:image'):
             try:
                 data = decode_base64_image(data)

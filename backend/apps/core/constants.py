@@ -1,7 +1,7 @@
 # --- Ограничения для полей модели Recipe ---
 RECIPE_NAME_MAX_LENGTH = 256
 MIN_COOK_TIME = 1  # в минутах
-MAX_COOK_TIME = 60 * 12
+MAX_COOK_TIME = 60 * 24
 RECIPE_SHORT_CODE_MAX_LENGTH = 8
 
 # --- Ограничения для полей модели Tag ---
@@ -16,10 +16,9 @@ MAX_AMOUNT_INGREDIENTS = 1000
 # --- Ограничения для полей модели MeasurementUnit ---
 MEASUREMENTUNIT_MAX_NAME_LENGTH = 64
 
-# --- Ограничения для полей модели CustomUser ---
+# --- Ограничения для полей модели User ---
 USERNAME_LENGTH = FIRST_NAME_LENGTH = LAST_NAME_LENGTH = 150
-USERNAME_MIN_LENGTH = FIRST_NAME_MIN_LENGTH = LAST_NAME_MIN_LENGTH = 4
-USERNAME_VALIDATION_REGEX = r'^\w+$'
+USERNAME_MIN_LENGTH = FIRST_NAME_MIN_LENGTH = LAST_NAME_MIN_LENGTH = 2
 NAME_VALIDATION_REGEX = r'^[A-Za-zА-Яа-яЁё]+$'
 EMAIL_LENGTH = 254
 
@@ -52,31 +51,21 @@ PAGE_SIZE_PAGINATION = 10
 MAX_PAGE_SIZE_PAGINATION = 50
 
 # --- Help texts для моделей приложения users ---
-CUSTOMUSER_USERNAME_HELP = (
+USER_USERNAME_HELP = (
     'Уникальное имя пользователя. '
     'Должно содержать только латинские буквы, цифры и подчёркивания. '
     f'Минимум {USERNAME_MIN_LENGTH} символов(а).'
 )
-CUSTOMUSER_EMAIL_HELP = (
+USER_EMAIL_HELP = (
     'Действующий и уникальный адрес электронной почты, используемый для входа.'
 )
-CUSTOMUSER_FIRSTNAME_HELP = (
-    'Введите имя (только буквы кириллицы или латиницы).'
-)
-CUSTOMUSER_LASTNAME_HELP = (
-    'Введите фамилию (только буквы кириллицы или латиницы).'
-)
-CUSTOMUSER_AVATAR_HELP = (
+USER_FIRSTNAME_HELP = 'Введите имя (только буквы кириллицы или латиницы).'
+USER_LASTNAME_HELP = 'Введите фамилию (только буквы кириллицы или латиницы).'
+USER_AVATAR_HELP = (
     f'Загрузите фото в формате {", ".join(ALLOWED_EXTENSIONS)}. '
     f'Максимальный размер: {MAX_SIZE_FILE}МБ.'
 )
 
-FAVORITE_USER_HELP = 'Пользователь, у которого есть список избранного.'
-
-FAVORITEITEM_FAVORITE_HELP = (
-    'Список избранного, к которому относится этот элемент.'
-)
-FAVORITEITEM_RECIPE_HELP = 'Рецепт, добавленный в избранное.'
 
 SUBSCRIBE_USER_HELP = 'Пользователь, который подписывается.'
 SUBSCRIBE_AUTHOR_HELP = 'Пользователь, на которого подписываются.'

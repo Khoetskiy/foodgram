@@ -38,7 +38,6 @@ def cache_old_image_path(sender, instance, **kwargs):
     Args:
         sender (Model): Модель, отправившая сигнал.
         instance (Recipe): Экземпляр рецепта.
-        **kwargs: Дополнительные аргументы.
     """
     if not instance.pk:
         return

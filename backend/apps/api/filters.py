@@ -60,27 +60,23 @@ class RecipeFilter(filters.FilterSet):
         fields = ('is_favorited', 'is_in_shopping_cart', 'author', 'tags')
 
     def filter_is_favorited(self, queryset, name, value):
-        """
-        Фильтрует рецепты по статусу "в избранном" для текущего пользователя.
-        """
+        """Фильтрует рецепты по статусу "в избранном"."""
         user = self.request.user
 
         if not user.is_authenticated:
             return queryset.none() if value else queryset
 
         if value == 1:
-            return queryset.filter(favorited_by__favorite__user=user)
-        return queryset.exclude(favorited_by__favorite__user=user)
+            return queryset.filter(favorites__user=user)
+        return queryset.exclude(favorites__user=user)
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        """
-        Фильтрует рецепты по статусу "в корзине" для текущего пользователя.
-        """
+        """Фильтрует рецепты по статусу "в корзине"."""
         user = self.request.user
 
         if not user.is_authenticated:
             return queryset.none() if value else queryset
 
         if value == 1:
-            return queryset.filter(in_carts__cart__user=user)
-        return queryset.exclude(in_carts__cart__user=user)
+            return queryset.filter(carts__user=user)
+        return queryset.exclude(carts__user=user)

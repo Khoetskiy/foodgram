@@ -2,10 +2,12 @@ from django.utils.html import format_html, format_html_join
 
 
 def render_html_list_block(args_list: list, title: str) -> str:
-    """Рендерит HTML-список c раскрывающимся блоком.
+    """
+    Рендерит HTML-список c раскрывающимся блоком.
 
     Args:
-        args_list (list) список объектов.
+        args_list: (list) список объектов.
+        title (str): имя блока.
 
     Returns:
         str: HTML-код c раскрывающимся списком.
