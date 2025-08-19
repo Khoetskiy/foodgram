@@ -150,7 +150,7 @@ skip-magic-trailing-comma = false
 [tool.ruff.lint.per-file-ignores]
 "*/settings/*.py" = ["F403", "F405", "E501", "T201", "PGH004", "TID252"]
 "*/migrations/*.py" = ["D100", "D101", "D102", "D103", "F401"]
-"*/apps.py" = ["F401", "PLC0415", "D101", "D102"]
+"*/apps.py" = ["F401", "PLC0415", "D101", "D102", "RUF100"]
 "manage.py" = ["PLC0415", "TRY003", "EM101"]
 "*/wsgi.py" = ["D100", "E501"]
 "*/asgi.py" = ["D100", "E501"]
