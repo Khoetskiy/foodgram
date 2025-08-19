@@ -82,36 +82,3 @@ class RecipeViewSet(
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeWriteSerializer
         return RecipeReadSerializer
-
-    # def create(self, request, *args, **kwargs):
-    #     """
-    #     Переопределено для возврата данных через `RecipeReadSerializer`
-    #     после успешного создания.
-    #     """
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     recipe = serializer.save(author=request.user)
-    #     return self._get_read_response(recipe, status.HTTP_201_CREATED)  # REVIEW: Используй метод to_representation в сериализаторе для возврата нужного сериализатора. (СПРОСИЛ)
-
-    # def update(self, request, *args, **kwargs):
-    #     """
-    #     Переопределено для возврата данных через `RecipeReadSerializer`  # REVIEW: Смотри коммент выше. (СПРОСИЛ)
-    #     после успешного обновления.
-    #     """
-    #     partial = kwargs.pop('partial', False)
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(
-    #         instance, data=request.data, partial=partial
-    #     )
-    #     serializer.is_valid(raise_exception=True)
-    #     recipe = serializer.save()
-    #     return self._get_read_response(recipe, status.HTTP_200_OK)
-
-    # def _get_read_response(self, instance, status_code):
-    #     """
-    #     Формирует ответ c данными для чтения c помощью `RecipeReadSerializer`.
-    #     """
-    #     read_serializer = RecipeReadSerializer(
-    #         instance, context={'request': self.request}
-    #     )
-    #     return Response(read_serializer.data, status=status_code)

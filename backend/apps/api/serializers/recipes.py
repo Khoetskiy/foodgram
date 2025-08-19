@@ -21,7 +21,7 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
-        # fields = '__all__'  # REVIEW: Используй '__all__' (СПРОСИЛ)
+        # fields = '__all__'
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -34,7 +34,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
-        # fields = '__all__'  # REVIEW: Используй '__all__' (СПРОСИЛ)
+        # fields = '__all__'
 
 
 class RecipeIngredientBaseSerializer(serializers.ModelSerializer):
@@ -92,7 +92,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         required=True,
         allow_null=False,
     )
-    # REVIEW: Валидировать дублирование тегов? (СПРОСИЛ)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True,
@@ -103,7 +102,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         },
     )
 
-    # REVIEW: Добавь поле cooking_time и его валидацию на минимальное значение (СПРОСИЛ)
     class Meta:
         model = Recipe
         fields = (
@@ -119,7 +117,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """
         Валидирует отсутствие полей тегов и ингедиентов.
-        Объединяет одинаковые ингредиенты.  # FIXME:
+        Объединяет одинаковые ингредиенты.
         """
         if 'ingredients' in data:
             merged = {}
@@ -163,7 +161,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         instance.tags.set(tags_data)
         return super().update(instance, validated_data)
 
-    def to_representation(self, instance):  # FIXME: либо в ViewSets?
+    def to_representation(self, instance):
+        """Возвращает данные объекта с помощью RecipeReadSerializer."""
         return RecipeReadSerializer(instance, context=self.context).data
 
 
