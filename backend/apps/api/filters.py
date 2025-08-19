@@ -66,12 +66,9 @@ class RecipeFilter(filters.FilterSet):
         if not user.is_authenticated:
             return queryset.none() if value else queryset
 
-        if (
-            value == 1
-        ):  # REVIEW: Можно убрать сравнение и оставить только if value:()
-            return queryset.filter(favorited_by__favorite__user=user)
-        return queryset.exclude(favorited_by__favorite__user=user)
-
+        if value == 1:
+            return queryset.filter(favorites__user=user)
+        return queryset.exclude(favorites__user=user)
     def filter_is_in_shopping_cart(self, queryset, name, value):
         """Фильтрует рецепты по статусу "в корзине"."""
         user = self.request.user
@@ -80,5 +77,5 @@ class RecipeFilter(filters.FilterSet):
             return queryset.none() if value else queryset
 
         if value == 1:
-            return queryset.filter(in_carts__cart__user=user)
-        return queryset.exclude(in_carts__cart__user=user)
+            return queryset.filter(carts__user=user)
+        return queryset.exclude(carts__user=user)

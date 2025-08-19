@@ -222,7 +222,7 @@ class ShoppingCartManagerMixin:
     def _get_shopping_ingredients(self, user):
         """Возвращает queryset ингредиентов."""
         return (
-            RecipeIngredient.objects.filter(recipe__in_carts__cart__user=user)
+            RecipeIngredient.objects.filter(recipe__carts__user=user)
             .values(
                 'ingredient__name',
                 'ingredient__measurement_unit__name',
