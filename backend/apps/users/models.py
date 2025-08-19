@@ -1,4 +1,4 @@
-# ruff: noqa: RUF012 RUF002
+# ruff: noqa: RUF012
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError

@@ -8,4 +8,4 @@ class RecipesConfig(AppConfig):
     verbose_name = 'рецепты'
 
     def ready(self):
-        import apps.recipes.signals  # noqa:F401
+        import apps.recipes.signals

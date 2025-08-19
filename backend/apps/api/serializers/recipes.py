@@ -119,7 +119,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """
         Валидирует отсутствие полей тегов и ингедиентов.
-        Объединяет одинаковые ингредиенты.
+        Объединяет одинаковые ингредиенты.  # FIXME:
         """
         if 'ingredients' in data:
             merged = {}
@@ -199,7 +199,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
 
     def get_author(self, obj):
-        """Lazy import для UserReadSerializer"""
+        """Lazy import для UserReadSerializer."""
         from .users import UserReadSerializer
 
         return UserReadSerializer(obj.author, context=self.context).data

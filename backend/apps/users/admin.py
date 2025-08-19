@@ -20,9 +20,7 @@ admin.site.unregister(Group)
 class SubscriptionsInline(
     BaseSubscribeInlineMixin, NoChangeMixin, admin.TabularInline
 ):
-    """
-    Inline для отображения подписок пользователя (на кого он подписан).
-    """
+    """Inline для отображения подписок пользователя."""
 
     fk_name = 'user'
 
@@ -33,9 +31,7 @@ class SubscriptionsInline(
 class SubscribersInline(
     BaseSubscribeInlineMixin, NoChangeMixin, admin.TabularInline
 ):
-    """
-    Inline для отображения подписчиков пользователя (кто на него подписан).
-    """
+    """Inline для отображения подписчиков пользователя."""
 
     fk_name = 'author'
 

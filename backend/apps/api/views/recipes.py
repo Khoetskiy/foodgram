@@ -78,6 +78,7 @@ class RecipeViewSet(
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
+        """Возвращает сериализатор в зависимости от действия."""
         if self.action in ['create', 'update', 'partial_update']:
             return RecipeWriteSerializer
         return RecipeReadSerializer

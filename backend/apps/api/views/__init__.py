@@ -1,4 +1,3 @@
-# ruff: noqa: TID252
 from .mixins import (
     AvatarManagementMixin,
     DisableDjoserActionsMixin,

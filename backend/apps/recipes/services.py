@@ -45,6 +45,7 @@ def generate_unique_slug(
         model_class: Класс модели.
         instance: Экземпляр модели для исключения при проверке уникальности.
         allow_unicode (bool): Разрешает использование Unicode-символов.
+        max_attempts (int): Количество попыток.
         max_length_slug (int): Максимальная длина slug.
 
     Returns:
@@ -149,7 +150,7 @@ def create_recipe_ingredients(recipe, ingredients_data: list[dict]) -> None:
         recipe (Recipe): Сохраненный рецепт.
         ingredients_data (list[dict]): Список ингредиентов.
     """
-    from apps.recipes.models import RecipeIngredient  # Иначе цикличный импорт
+    from apps.recipes.models import RecipeIngredient  # noqa: PLC0415
 
     RecipeIngredient.objects.bulk_create(
         [
@@ -208,7 +209,6 @@ def get_txt_in_response(
     Returns:
         HttpResponse: ответ c файлом для скачивания
     """
-
     lines = []
     lines.append('Список покупок')
     lines.append('=' * 50)

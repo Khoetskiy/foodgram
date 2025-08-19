@@ -114,9 +114,7 @@ class SubscriptionMixin:
         permission_classes=[IsAuthenticated],
     )
     def subscriptions(self, request):
-        """
-        Возвращает пользователей, на которых подписан текущий пользователь.
-        """
+        """Возвращает подписки текущего пользователя."""
         subscriptions = Subscribe.objects.filter(user=request.user)
         authors = self.get_queryset().filter(
             pk__in=subscriptions.values('author')
@@ -276,7 +274,7 @@ class ShortLinkMixin:
         url_path='get-link',
         url_name='get-link',
     )
-    def get_short_link(self, request, pk=None):
+    def get_short_link(self, request, **kwargs):
         """Возвращает короткую ссылку на рецепт по его short_code."""
         recipe = self.get_object()
 

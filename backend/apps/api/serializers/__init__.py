@@ -1,4 +1,3 @@
-# ruff: noqa: TID252
 from .fields import Base64ImageField
 from .recipes import (
     CartCreateSerializer,

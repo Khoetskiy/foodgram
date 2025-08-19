@@ -56,12 +56,14 @@ class UserViewSet(
         return super().get_permissions()
 
     def update(self, request, *args, **kwargs):
+        """Запрет метода обновления."""
         return Response(
             {'detail': 'Метод "PUT" не разрешен.'},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
 
     def destroy(self, request, *args, **kwargs):
+        """Запрет метода удаления."""
         return Response(
             {'detail': 'Метод "DELETE" не разрешен.'},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,

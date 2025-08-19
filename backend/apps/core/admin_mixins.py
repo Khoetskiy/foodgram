@@ -62,9 +62,7 @@ class BaseSubscribeInlineMixin:
 
 
 class UserRecipeCollectionAdminMixin(admin.ModelAdmin):
-    """
-    Миксин для админ-панелей коллекций пользователей избранного и корзины.
-    """
+    """Миксин для админ-панелей коллекций пользователей."""
 
     list_display = ('user', 'recipe', 'created_at')
     search_fields = ('user__username', 'recipe__name')
@@ -73,9 +71,7 @@ class UserRecipeCollectionAdminMixin(admin.ModelAdmin):
 
 
 class BaseRecipeCollectionInLineMixin(admin.TabularInline):
-    """
-    Базовый класс для Inline коллекций пользователей избранного и корзины.
-    """
+    """Базовый класс для Inline коллекций пользователей."""
 
     model = None
     extra = 0

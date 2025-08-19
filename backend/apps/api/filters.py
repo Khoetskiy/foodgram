@@ -60,9 +60,7 @@ class RecipeFilter(filters.FilterSet):
         fields = ('is_favorited', 'is_in_shopping_cart', 'author', 'tags')
 
     def filter_is_favorited(self, queryset, name, value):
-        """
-        Фильтрует рецепты по статусу "в избранном" для текущего пользователя.
-        """
+        """Фильтрует рецепты по статусу "в избранном"."""
         user = self.request.user
 
         if not user.is_authenticated:
@@ -75,9 +73,7 @@ class RecipeFilter(filters.FilterSet):
         return queryset.exclude(favorited_by__favorite__user=user)
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
-        """
-        Фильтрует рецепты по статусу "в корзине" для текущего пользователя.
-        """
+        """Фильтрует рецепты по статусу "в корзине"."""
         user = self.request.user
 
         if not user.is_authenticated:
