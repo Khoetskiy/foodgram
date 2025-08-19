@@ -1,9 +1,7 @@
 [tool.ruff]
 src = ["backend"]
-
-target-version = "py312"
-
 line-length = 79
+target-version = "py312"
 
 exclude = [
     ".bzr",
@@ -37,24 +35,86 @@ exclude = [
     "manage.py"
 ]
 
-# Настройки линтера
 [tool.ruff.lint]
 select = [
-    "E", "W", "F", "I", "N", "UP", "YTT", "S", "BLE", "FBT",
-    "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC",
-    "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET",
-    "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD",
-    "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "PERF",
-    "FURB", "LOG", "RUF"
+    "D",   # docstring
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort (сортировка импортов)
+    "N",   # pep8-naming (соглашения об именовании)
+    "UP",  # pyupgrade (модернизация синтаксиса)
+    "S",   # flake8-bandit (безопасность)
+    "BLE", # flake8-blind-except (голые except)
+    "FBT", # flake8-boolean-trap
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "COM", # flake8-commas
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    "EM",  # flake8-errmsg
+    "EXE", # flake8-executable
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "G",   # flake8-logging-format (ленивое форматирование логов)
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PT",  # flake8-pytest-style (стилистика тестов)
+    "Q",   # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports (запрет относительных импортов)
+    "TCH", # flake8-type-checking
+    "INT", # flake8-gettext
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "TD",  # flake8-todos
+    "FIX", # flake8-fixme
+    "PGH", # pygrep-hooks
+    "PL",  # Pylint
+    "TRY", # tryceratops
+    "FLY", # flynt
+    "PERF", # Perflint
+    "FURB", # refurb
+    "LOG",  # flake8-logging
+    "RUF",   # Ruff-specific rules
 ]
 
 ignore = [
-    "ANN401", "S101", "D", "FBT001", "FBT002", "TD002", "TD003",
-    "FIX002", "COM812", "ISC001", "RUF001", "BLE001", "TD001", "FIX001",
-    "FIX003", "RUF012", "ERA001", "RUF002", "PGH004", "ARG001", "ARG002",
-    "PLC0415", "RUF100", "PLR0913", "PTH123", "S105", "TID252"
+    "ANN401", # Использование Any в аннотациях
+    "S101",   # Использование assert
+    "D100",   # Missing docstring in public module
+    "D102",   # Missing docstring in public method
+    "D104",   # Missing docstring in public package
+    "D105",   # Missing docstring in magic method
+    "D106",   # Missing docstring meta class
+    "D107",   # Missing docstring in __init__
+    "D205",   # 1 blank line required between summary line and description
+    "D212",   # Multi-line docstring summary should start at the first line
+    "D413",   # Missing blank line after last section
+    "FBT001", # Boolean positional arg in function definition
+    "FBT002", # Boolean default arg in function definition
+    "TD001",  # Missing author in TODO
+    "TD002",  # Missing author in TODO
+    "TD003",  # Missing issue link on line following TODO
+    "FIX001", # Line contains FIXME
+    "FIX002", # Line contains TODO
+    "COM812", # Trailing comma missing (конфликт с форматтером)
+    "ISC001", # Implicitly concatenated string literals (конфликт с форматтером)
+    "RUF001", # String contains ambiguous unicode character
+    "BLE001", # Перехват "слепых" исключений
+    "T201",   # Печать print
+    "RUF002",  # Использование кириллицы
 ]
-unfixable = ["F401", "F841"]
+
+unfixable = [
+    "F401",  # Неиспользуемые импорты
+    "F841"   # Неиспользуемые переменные
+]
 
 [tool.ruff.lint.isort]
 known-local-folder = ["apps", "config"]
@@ -67,12 +127,11 @@ docstring-quotes = "double"
 avoid-escape = true
 
 [tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
+ban-relative-imports = "parents"
 
 [tool.ruff.lint.flake8-type-checking]
 strict = false
 
-# Настройки форматтера
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "space"
@@ -81,8 +140,10 @@ docstring-code-format = true
 skip-magic-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"backend/config/settings/__init__.py" = ["F403", "F405", "T201", "PGH004", "TID252"]
-"backend/config/settings/base.py" = ["F403", "F405", "E501", "T201", "PGH004", "TID252"]
-"backend/config/settings/development.py" = ["F403", "F405", "T201", "PGH004", "TID252"]
-"backend/config/settings/production.py" = ["F403", "F405", "PGH004", "T201", "TID252"]
-"backend/apps/recipes/apps.py" = ["F401", "PLC0415"]
+"*/settings/*.py" = ["F403", "F405", "E501", "T201", "PGH004", "TID252"]
+"*/migrations/*.py" = ["D100", "D101", "D102", "D103", "F401"]
+"*/apps.py" = ["F401", "PLC0415", "D101", "D102"]
+"manage.py" = ["PLC0415", "TRY003", "EM101"]
+"*/wsgi.py" = ["D100", "E501"]
+"*/asgi.py" = ["D100", "E501"]
+"*/api/*" = ["ARG002"]
