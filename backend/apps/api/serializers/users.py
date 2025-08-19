@@ -144,7 +144,7 @@ class SubscribeCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания подписки между пользователями.
     Проверяет, чтобы пользователь не мог подписаться на самого себя.
-    """  # FIXME:
+    """
 
     class Meta:
         model = Subscribe

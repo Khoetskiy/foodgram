@@ -248,9 +248,7 @@ class UserRecipeRelation(TimeStampModel):
         ]
 
     def __str__(self) -> str:
-        return truncate_text(
-            f'{self.recipe.name} → {self.user.username}'
-        )  # FIXME: Какие отображение выбрать?
+        return truncate_text(f'{self.recipe.name} → {self.user.username}')
 
 
 class Cart(UserRecipeRelation):
@@ -261,9 +259,6 @@ class Cart(UserRecipeRelation):
         verbose_name_plural = 'корзины'
         default_related_name = 'carts'
 
-    # def __str__(self) -> str:
-    #     return f'{self.recipe} в корзине {self.user.username}'
-
 
 class Favorite(UserRecipeRelation):
     """Модель для избранных рецептов пользователя."""
@@ -272,9 +267,3 @@ class Favorite(UserRecipeRelation):
         verbose_name = 'избранное'
         verbose_name_plural = 'избранные'
         default_related_name = 'favorites'
-
-    # def __str__(self) -> str:
-    #     return f'{self.recipe} в избранном {self.user.username}'
-
-
-# REVIEW: Ответить зачем использовал Cart, CartItem, Favorite, FavoriteItem

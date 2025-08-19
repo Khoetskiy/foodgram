@@ -119,9 +119,7 @@ class Ingredient(TimeStampModel):
         ordering = ('name',)
 
     def __str__(self) -> str:
-        return truncate_text(
-            f'{self.name} ({self.measurement_unit})'
-        )  # QUESTION: Работает на фронте?
+        return truncate_text({self.name})
 
     def clean(self):
         """Нормализует поле name."""
@@ -160,7 +158,6 @@ class Tag(TimeStampModel):
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
         ordering = ('name',)
-
 
     def __str__(self) -> str:
         """Возвращает усеченное название тега."""

@@ -218,9 +218,7 @@ def get_txt_in_response(
     )
     lines.append('-' * 50)
 
-    for item in (
-        ingredients_summary
-    ):  # REVIEW: Можно использовать функцию F, чтобы изменить имена полей.()
+    for item in ingredients_summary:
         name = item['ingredient__name']
         unit = item['ingredient__measurement_unit__name']
         amount = str(item['amount'])
