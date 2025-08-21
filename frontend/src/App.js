@@ -229,6 +229,7 @@ function App() {
               component={User}
               updateOrders={updateOrders}
             /> */}
+            {/* Ошибка отображения кол-ва рецептов в корзине на странице пользователя */}
             <Route
               exact
               path="/user/:id"
