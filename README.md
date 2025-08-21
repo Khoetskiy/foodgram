@@ -1,6 +1,6 @@
 # Foodgram - Продуктовый помощник
 
-[![CI/CD Workflow](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml)
+[![CI/CD Workflow](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Khoetskiy/foodgram/actions/workflows/main.yml) ![Star](https://img.shields.io/github/stars/Khoetskiy/foodgram?style=social)
 
 **Веб-сервис для публикации и обмена кулинарными рецептами**
 

@@ -223,11 +223,18 @@ function App() {
         <div className="App">
           <Header orders={orders} loggedIn={loggedIn} onSignOut={onSignOut} />
           <Switch>
-            <Route
+            {/* <Route
               exact
               path="/user/:id"
               component={User}
               updateOrders={updateOrders}
+            /> */}
+            <Route
+              exact
+              path="/user/:id"
+              render={(props) => (
+                <User {...props} updateOrders={updateOrders} />
+              )}
             />
             <ProtectedRoute
               exact
